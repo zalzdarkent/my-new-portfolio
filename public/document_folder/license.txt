@@ -1,0 +1,11 @@
+Model Information:
+* title:	document_file_folder (2)
+* source:	https://sketchfab.com/3d-models/document-file-folder-2-dbe6eb3b87ea409fa2ae339a6eb74839
+* author:	ap-school (https://sketchfab.com/ap-school)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "document_file_folder (2)" (https://sketchfab.com/3d-models/document-file-folder-2-dbe6eb3b87ea409fa2ae339a6eb74839) by ap-school (https://sketchfab.com/ap-school) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

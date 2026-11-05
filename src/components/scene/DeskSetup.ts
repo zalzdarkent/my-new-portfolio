@@ -62,14 +62,17 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
   monitorHitbox.add(glass)
   scene.add(monitorHitbox)
 
-  // Load both Gaming PC Setup and Gaming Chair in parallel before start screen finishes
+  // Load Gaming PC Setup, Gaming Chair, Rhyzome Plant, and Document Folder in parallel before start screen finishes
   const gltfLoader = new GLTFLoader()
+  let plantLeavesNode: THREE.Object3D | null = null
 
   Promise.all([
     gltfLoader.loadAsync('./gaming-pc/scene.gltf'),
     gltfLoader.loadAsync('./gaming_chair/scene.gltf'),
+    gltfLoader.loadAsync('./rhyzome_plant/scene.gltf'),
+    gltfLoader.loadAsync('./document_folder/scene.gltf'),
   ])
-    .then(([pcGltf, chairGltf]) => {
+    .then(([pcGltf, chairGltf, plantGltf, folderGltf]) => {
       const pcModel = pcGltf.scene
 
       pcModel.traverse((child) => {
@@ -115,6 +118,13 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
       const chairModel = chairGltf.scene
       chairModel.traverse((child) => {
         if (child instanceof THREE.Mesh) {
+          const mats = Array.isArray(child.material) ? child.material : [child.material]
+          for (const m of mats) {
+            if (m) {
+              m.transparent = false
+              m.depthWrite = true
+            }
+          }
           child.castShadow = true
           child.receiveShadow = true
           child.frustumCulled = false
@@ -128,25 +138,56 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
       chairModel.position.set(0.45, 0.58, 0.92)
       scene.add(chairModel)
 
+      const plantModel = plantGltf.scene
+      plantModel.traverse((child) => {
+        if (child.name === 'plant') {
+          plantLeavesNode = child
+        }
+        if (child instanceof THREE.Mesh) {
+          const mats = Array.isArray(child.material) ? child.material : [child.material]
+          for (const m of mats) {
+            if (m) {
+              m.transparent = false
+              m.depthWrite = true
+            }
+          }
+          child.castShadow = true
+          child.receiveShadow = true
+          child.frustumCulled = false
+        }
+      })
+
+      plantModel.scale.setScalar(0.62)
+      plantModel.position.set(1.26, 0, -0.32)
+      scene.add(plantModel)
+
+      const folderModel = folderGltf.scene
+      folderModel.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          const mats = Array.isArray(child.material) ? child.material : [child.material]
+          for (const m of mats) {
+            if (m) {
+              m.transparent = false
+              m.depthWrite = true
+            }
+          }
+          child.castShadow = true
+          child.receiveShadow = true
+          child.frustumCulled = false
+        }
+      })
+
+      folderModel.scale.setScalar(0.098)
+      folderModel.rotation.y = 0.08
+      folderModel.position.set(-0.72, 0.7667, -0.12)
+      scene.add(folderModel)
+
       onModelsReady()
     })
     .catch((err) => {
       console.error('Error loading GLTF models:', err)
       onModelsReady()
     })
-
-  // Paper trays (stacked) on the far left of the desk, clear of the left speaker
-  const tray = (y: number, stack: number) => {
-    const g = new THREE.Group()
-    add(g, box(0.26, 0.008, 0.34, C.tray), 0, 0.004, 0)
-    for (const x of [-0.126, 0.126]) add(g, box(0.008, 0.05, 0.34, C.tray), x, 0.025, 0)
-    add(g, box(0.26, 0.05, 0.008, C.tray), 0, 0.025, -0.166)
-    add(g, box(0.26, 0.018, 0.008, C.tray), 0, 0.009, 0.166)
-    add(g, box(0.22, stack, 0.3, C.paper), 0, 0.008 + stack / 2, 0)
-    return add(scene, g, -0.73, y, -0.14)
-  }
-  tray(0.76, 0.03)
-  tray(0.818, 0.05).rotation.y = 0.04
 
   // White mug of coffee placed comfortably to the left, well clear of the keyboard and speaker
   const mug = new THREE.Group()
@@ -157,41 +198,13 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
   add(mug, new THREE.Mesh(new THREE.TorusGeometry(0.024, 0.007, 10, 20, Math.PI), mugMat), 0.04, 0.05, 0).rotation.z = -Math.PI / 2
   add(scene, mug, -0.54, 0.76, 0.22).rotation.y = 2.4
 
-  // Plant in a white pot behind the right end of the desk
-  const plant = new THREE.Group()
-  add(plant, new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.42, 28), std(C.pot, 0.5)), 0, 0.21, 0)
-  add(plant, new THREE.Mesh(new THREE.CircleGeometry(0.14, 24), std(0x3a2c22, 1)), 0, 0.415, 0).rotation.x = -Math.PI / 2
-  const leafShape = new THREE.Shape()
-  leafShape.moveTo(0, 0)
-  leafShape.quadraticCurveTo(0.1, 0.12, 0, 0.34)
-  leafShape.quadraticCurveTo(-0.1, 0.12, 0, 0)
-  const leafGeo = new THREE.ShapeGeometry(leafShape, 8)
-  const leafMat = new THREE.MeshStandardMaterial({ color: C.leaf, roughness: 0.6, side: THREE.DoubleSide })
-  const stemMat = std(0x4f7f50)
-  const leaves: THREE.Group[] = []
-  for (let i = 0; i < 14; i++) {
-    const stemLen = 0.35 + ((i * 7) % 5) * 0.12
-    const arm = new THREE.Group()
-    arm.rotation.y = i * 2.4
-    const lean = new THREE.Group()
-    lean.rotation.z = 0.25 + ((i * 3) % 4) * 0.12
-    add(lean, new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.008, stemLen, 6), stemMat), 0, stemLen / 2, 0)
-    const leaf = add(lean, new THREE.Mesh(leafGeo, leafMat), 0, stemLen, 0)
-    leaf.rotation.set(0.3, 0, -1.1 - ((i * 5) % 3) * 0.2)
-    leaf.scale.setScalar(1.35)
-    arm.add(lean)
-    plant.add(arm)
-    leaves.push(lean)
-  }
-  add(scene, plant, 1.15, 0, -0.32)
-
   // Soft studio lighting
   scene.add(new THREE.HemisphereLight(0xffffff, 0xcfcac4, 1.6))
   const key = new THREE.DirectionalLight(0xffffff, 2.5)
   key.position.set(0.6, 5, 2.0)
   key.castShadow = true
   key.shadow.mapSize.set(2048, 2048)
-  Object.assign(key.shadow.camera, { left: -2, right: 2, top: 2, bottom: -2, near: 0.5, far: 10 })
+  Object.assign(key.shadow.camera, { left: -2.2, right: 2.2, top: 2.2, bottom: -2.2, near: 0.5, far: 10 })
   key.shadow.radius = 6
   key.shadow.bias = -0.0005
   key.shadow.normalBias = 0.02
@@ -201,7 +214,10 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
   scene.add(fill)
 
   const life = (t: number) => {
-    leaves.forEach((l, i) => (l.rotation.x = Math.sin(t * 0.9 + i) * 0.03))
+    if (plantLeavesNode) {
+      plantLeavesNode.rotation.z = Math.sin(t * 0.9) * 0.015
+      plantLeavesNode.rotation.x = Math.cos(t * 0.7) * 0.012
+    }
   }
   return { monitor: monitorHitbox, life }
 }
