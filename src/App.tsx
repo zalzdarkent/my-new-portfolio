@@ -1,23 +1,22 @@
-import { lazy, Suspense, useState } from 'react'
+import { useState } from 'react'
 import Loader from './Loader'
-
-const Scene = lazy(() => import('./Scene'))
+import Scene from './Scene'
+import { playStartupSound } from './sound'
 
 export default function App() {
   const [started, setStarted] = useState(false)
+  const [modelsLoaded, setModelsLoaded] = useState(false)
   const [loaderGone, setLoaderGone] = useState(false)
 
   return (
     <>
-      {started && (
-        <Suspense fallback={null}>
-          <Scene />
-        </Suspense>
-      )}
+      <Scene started={started} onLoaded={() => setModelsLoaded(true)} />
       {!loaderGone && (
         <Loader
+          modelsLoaded={modelsLoaded}
           leaving={started}
           onStart={() => {
+            playStartupSound()
             setStarted(true)
             setTimeout(() => setLoaderGone(true), 1200)
           }}

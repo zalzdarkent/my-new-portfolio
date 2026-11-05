@@ -4,24 +4,34 @@ import * as THREE from 'three'
 import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import Desktop, { SCREEN_W, SCREEN_H } from './Desktop'
 import Hud from './Hud'
+import { playKeyClick, playMouseDown, playMouseUp } from './sound'
 
 export type Mode = 'overview' | 'desk' | 'screen'
+const BEGIN_TEXT = 'Click anywhere to begin '
 
-// Monitor screen in world units (4:3), facing +z. Units are roughly metres.
-const SCREEN = { w: 0.3, h: 0.225, center: new THREE.Vector3(0.15, 1.115, 0.102) }
+// Exact inner bezel opening of the Gigabyte monitor in world units:
+// X: [-0.3598, 0.2371] -> width = 0.5969, center.x = -0.06135
+// Y: [0.8671, 1.1929]  -> height = 0.3268, center.y = 1.0298
+const SCREEN = {
+  w: 0.597,
+  h: 0.3268,
+  center: new THREE.Vector3(-0.06135, 1.0298, 0.053),
+  rotX: -0.0698,
+}
 const INTRO = new THREE.Vector3(-6, 6.5, 9.5)
 const VIEWS = {
-  overview: { pos: new THREE.Vector3(-3.1, 3.2, 4.9), look: new THREE.Vector3(0.12, 0.55, 0.1), fit: 1.3 },
-  desk: { pos: new THREE.Vector3(-0.1, 1.2, 1.5), look: new THREE.Vector3(-0.06, 0.98, 0), fit: 1.5 },
+  overview: { pos: new THREE.Vector3(-3.1, 3.2, 4.9), look: new THREE.Vector3(0.05, 0.65, 0.1), fit: 1.3 },
+  desk: { pos: new THREE.Vector3(-0.06, 1.05, 1.15), look: new THREE.Vector3(-0.06, 1.025, 0.05), fit: 1.35 },
 }
 
-// Palette sampled from the original's desk scene
+// Palette sampled from desk scene
 const C = {
   top: 0x3d3939, metal: 0xc6c6c6, drawer: 0xd4d4d2, black: 0x232527, beige: 0xdedbd3, keys: 0xeae8e1,
   tray: 0xaa9e90, paper: 0xf5f4f0, binder: 0x4d3429, mug: 0xf4f4f1, coffee: 0x2b1a10,
-  leaf: 0x5f9f68, pot: 0xefefed, chair: 0x8b5a32, post: 0x8f9396,
+  leaf: 0x5f9f68, pot: 0xefefed,
 }
 
 const std = (color: number, roughness = 0.65, metalness = 0) => new THREE.MeshStandardMaterial({ color, roughness, metalness })
@@ -48,51 +58,99 @@ function paperTexture() {
   return new THREE.CanvasTexture(c)
 }
 
-function buildDesk(scene: THREE.Scene) {
+function buildDesk(scene: THREE.Scene, onModelsReady: () => void) {
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.13 }))
   floor.rotation.x = -Math.PI / 2
   floor.receiveShadow = true
   scene.add(floor)
 
   // Desk: dark top, grey metal legs, two-drawer pedestal on the left, side panel on the right
-  add(scene, box(1.6, 0.035, 0.75, C.top, 0.008), 0, 0.7425, 0)
-  for (const x of [-0.76, 0.76]) for (const z of [-0.33, 0.33]) add(scene, box(0.04, 0.725, 0.04, C.metal), x, 0.3625, z)
-  add(scene, box(0.42, 0.3, 0.66, C.metal), -0.52, 0.575, 0)
+  add(scene, box(1.8, 0.035, 0.8, C.top, 0.008), 0, 0.7425, 0)
+  for (const x of [-0.85, 0.85]) for (const z of [-0.35, 0.35]) add(scene, box(0.04, 0.725, 0.04, C.metal), x, 0.3625, z)
+  add(scene, box(0.42, 0.3, 0.7, C.metal), -0.62, 0.575, 0)
   for (const y of [0.65, 0.5]) {
-    add(scene, box(0.4, 0.135, 0.012, C.drawer, 0.004), -0.52, y, 0.336)
-    add(scene, box(0.12, 0.012, 0.02, C.black), -0.52, y + 0.03, 0.35)
+    add(scene, box(0.4, 0.135, 0.012, C.drawer, 0.004), -0.62, y, 0.356)
+    add(scene, box(0.12, 0.012, 0.02, C.black), -0.62, y + 0.03, 0.37)
   }
-  add(scene, box(0.02, 0.3, 0.66, C.metal), 0.76, 0.575, 0)
+  add(scene, box(0.02, 0.3, 0.7, C.metal), 0.85, 0.575, 0)
 
-  // Computer: desktop case, CRT monitor, keyboard, mouse
-  add(scene, box(0.46, 0.13, 0.4, C.beige, 0.012), 0.15, 0.825, -0.06)
-  add(scene, box(0.12, 0.012, 0.004, C.black), 0.27, 0.8, 0.141)
-  const led = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.006, 0.004), new THREE.MeshBasicMaterial({ color: 0x33dd66 }))
-  add(scene, led, 0.36, 0.86, 0.141)
-  const btn = add(scene, new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.006, 16), std(0xcfccc4)), 0.0, 0.835, 0.141)
-  btn.rotation.x = Math.PI / 2
+  // Interactive target monitor group for clicks/zooming
+  const monitorHitbox = new THREE.Group()
+  const glass = new THREE.Mesh(
+    new THREE.PlaneGeometry(SCREEN.w, SCREEN.h),
+    new THREE.MeshBasicMaterial({ color: 0x1d0718 }),
+  )
+  glass.position.copy(SCREEN.center)
+  glass.rotation.x = SCREEN.rotX
+  monitorHitbox.add(glass)
+  scene.add(monitorHitbox)
 
-  const monitor = new THREE.Group()
-  add(monitor, new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.03, 24), std(C.beige)), 0.15, 0.905, -0.03)
-  add(monitor, box(0.42, 0.36, 0.14, C.beige, 0.02), 0.15, 1.1, 0.03)
-  const back = add(monitor, new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.11, 0.22, 4, 1), std(C.beige)), 0.15, 1.09, -0.15)
-  back.rotation.set(Math.PI / 2, Math.PI / 4, 0)
-  const glass = new THREE.Mesh(new THREE.PlaneGeometry(SCREEN.w + 0.012, SCREEN.h + 0.012), new THREE.MeshBasicMaterial({ color: 0x1b2120 }))
-  glass.position.set(SCREEN.center.x, SCREEN.center.y, 0.1005)
-  monitor.add(glass)
-  add(monitor, new THREE.Mesh(new THREE.SphereGeometry(0.006, 12, 8), std(0x555555)), 0.33, 0.955, 0.1)
-  scene.add(monitor)
+  // Load both Gaming PC Setup and Gaming Chair in parallel before start screen finishes
+  const gltfLoader = new GLTFLoader()
+  const screenBackMat = new THREE.MeshBasicMaterial({ color: 0x1d0718 })
 
-  add(scene, box(0.44, 0.025, 0.15, C.beige, 0.008), 0.15, 0.7725, 0.22)
-  const keys = new THREE.InstancedMesh(new THREE.BoxGeometry(0.02, 0.012, 0.02), std(C.keys, 0.5), 17 * 5)
-  const m4 = new THREE.Matrix4()
-  for (let i = 0; i < 85; i++) keys.setMatrixAt(i, m4.makeTranslation(-0.05 + (i % 17) * 0.0245, 0.788, 0.168 + Math.floor(i / 17) * 0.025))
-  add(scene, keys)
-  const mouse = add(scene, new THREE.Mesh(new THREE.CapsuleGeometry(0.022, 0.03, 4, 12), std(C.beige)), 0.46, 0.772, 0.23)
-  mouse.rotation.x = Math.PI / 2
-  mouse.scale.set(1, 1, 0.55)
+  Promise.all([
+    gltfLoader.loadAsync('./gaming-pc/scene.gltf'),
+    gltfLoader.loadAsync('./gaming_chair/scene.gltf'),
+  ])
+    .then(([pcGltf, chairGltf]) => {
+      const pcModel = pcGltf.scene
 
-  // Paper trays (stacked), paper stack, a loose sheet
+      pcModel.traverse((child) => {
+        // Hide the stock wood desk from the gaming-pc GLTF model
+        if (child.name === 'Cube_0' || child.name === 'Object_4' || child.name.toLowerCase().includes('table')) {
+          child.visible = false
+        }
+        // Replace the old GTR car wallpaper mesh on the monitor with dark Ubuntu backing
+        if (
+          child.name === 'MY SCREEN_142' ||
+          child.name === 'Object_288' ||
+          child.name === 'gallerymodel_139' ||
+          child.name === 'Object_282' ||
+          child.name === 'bg2_141' ||
+          child.name === 'Object_286'
+        ) {
+          if (child instanceof THREE.Mesh) {
+            child.material = screenBackMat
+          }
+        }
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+          child.frustumCulled = false
+        }
+      })
+
+      const S = 0.6
+      pcModel.scale.setScalar(S)
+      pcModel.rotation.y = -Math.PI / 2
+      pcModel.position.set(0.22, 0.748, 0.18)
+      monitorHitbox.add(pcModel)
+
+      const chairModel = chairGltf.scene
+      chairModel.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+          child.frustumCulled = false
+        }
+      })
+
+      const chairScale = 0.034
+      chairModel.scale.setScalar(chairScale)
+      // Rotated 90 degrees to the left (facing -X towards the left/desk)
+      chairModel.rotation.y = -Math.PI / 2 - 0.2
+      chairModel.position.set(0.45, 0.58, 0.92)
+      scene.add(chairModel)
+
+      onModelsReady()
+    })
+    .catch((err) => {
+      console.error('Error loading GLTF models:', err)
+      onModelsReady()
+    })
+
+  // Paper trays (stacked) on the far left of the desk, clear of the left speaker
   const tray = (y: number, stack: number) => {
     const g = new THREE.Group()
     add(g, box(0.26, 0.008, 0.34, C.tray), 0, 0.004, 0)
@@ -100,30 +158,19 @@ function buildDesk(scene: THREE.Scene) {
     add(g, box(0.26, 0.05, 0.008, C.tray), 0, 0.025, -0.166)
     add(g, box(0.26, 0.018, 0.008, C.tray), 0, 0.009, 0.166)
     add(g, box(0.22, stack, 0.3, C.paper), 0, 0.008 + stack / 2, 0)
-    return add(scene, g, -0.6, y, -0.04)
+    return add(scene, g, -0.73, y, -0.14)
   }
   tray(0.76, 0.03)
   tray(0.818, 0.05).rotation.y = 0.04
-  add(scene, box(0.21, 0.06, 0.29, C.paper, 0.002), -0.3, 0.79, -0.02).rotation.y = 0.06
-  const sheet = add(scene, new THREE.Mesh(new THREE.PlaneGeometry(0.21, 0.297), new THREE.MeshStandardMaterial({ map: paperTexture(), roughness: 0.9 })), -0.33, 0.7615, 0.2)
-  sheet.rotation.set(-Math.PI / 2, 0, 0.5)
 
-  // Binders with a ring hole on the spine, white mug of coffee
-  ;[[0.6, -0.04], [0.68, 0.07]].forEach(([x, tilt]) => {
-    const g = new THREE.Group()
-    add(g, box(0.055, 0.3, 0.25, C.binder, 0.004), 0, 0.15, 0)
-    add(g, new THREE.Mesh(new THREE.CylinderGeometry(0.017, 0.017, 0.004, 20), std(0xf2f2f2)), 0, 0.08, 0.126).rotation.x = Math.PI / 2
-    add(g, new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.006, 20), std(0x2a2a2a)), 0, 0.08, 0.127).rotation.x = Math.PI / 2
-    g.rotation.z = tilt
-    add(scene, g, x, 0.76, -0.2)
-  })
+  // White mug of coffee placed comfortably to the left, well clear of the keyboard and speaker
   const mug = new THREE.Group()
   const mugMat = new THREE.MeshStandardMaterial({ color: C.mug, roughness: 0.35, side: THREE.DoubleSide })
   add(mug, new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.036, 0.095, 28, 1, true), mugMat), 0, 0.0475, 0)
   add(mug, new THREE.Mesh(new THREE.CircleGeometry(0.036, 28), mugMat), 0, 0.002, 0).rotation.x = -Math.PI / 2
   add(mug, new THREE.Mesh(new THREE.CircleGeometry(0.038, 28), std(C.coffee, 0.2)), 0, 0.08, 0).rotation.x = -Math.PI / 2
   add(mug, new THREE.Mesh(new THREE.TorusGeometry(0.024, 0.007, 10, 20, Math.PI), mugMat), 0.04, 0.05, 0).rotation.z = -Math.PI / 2
-  add(scene, mug, 0.6, 0.76, 0.08).rotation.y = 0.5
+  add(scene, mug, -0.54, 0.76, 0.22).rotation.y = 2.4
 
   // Plant in a white pot behind the right end of the desk
   const plant = new THREE.Group()
@@ -151,50 +198,32 @@ function buildDesk(scene: THREE.Scene) {
     plant.add(arm)
     leaves.push(lean)
   }
-  add(scene, plant, 1.05, 0, -0.32)
-
-  // Office chair: brown seat and back, metal post, black five-star base on casters
-  const chair = new THREE.Group()
-  for (let i = 0; i < 5; i++) {
-    const a = (i / 5) * Math.PI * 2
-    const leg = add(chair, box(0.28, 0.025, 0.035, C.black), Math.cos(a) * 0.14, 0.06, Math.sin(a) * 0.14)
-    leg.rotation.y = -a
-    add(chair, new THREE.Mesh(new THREE.SphereGeometry(0.024, 12, 8), std(C.black, 0.4)), Math.cos(a) * 0.27, 0.024, Math.sin(a) * 0.27)
-  }
-  add(chair, new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.03, 0.32, 16), std(0x3a3d40, 0.3, 0.6)), 0, 0.22, 0)
-  add(chair, box(0.24, 0.03, 0.24, C.black), 0, 0.385, 0)
-  add(chair, box(0.46, 0.08, 0.44, C.chair, 0.035), 0, 0.44, 0)
-  add(chair, box(0.05, 0.03, 0.2, C.post), 0, 0.39, 0.2)
-  add(chair, box(0.05, 0.42, 0.03, C.post), 0, 0.6, 0.29)
-  add(chair, box(0.42, 0.32, 0.07, C.chair, 0.03), 0, 0.8, 0.27).rotation.x = -0.12
-  chair.rotation.y = 1.35
-  add(scene, chair, 0.45, 0, 0.56)
+  add(scene, plant, 1.15, 0, -0.32)
 
   // Soft studio lighting
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xcfcac4, 1.5))
-  const key = new THREE.DirectionalLight(0xffffff, 2.4)
-  key.position.set(0.6, 5, 1.6)
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xcfcac4, 1.6))
+  const key = new THREE.DirectionalLight(0xffffff, 2.5)
+  key.position.set(0.6, 5, 2.0)
   key.castShadow = true
   key.shadow.mapSize.set(2048, 2048)
   Object.assign(key.shadow.camera, { left: -2, right: 2, top: 2, bottom: -2, near: 0.5, far: 10 })
-  key.shadow.radius = 8
+  key.shadow.radius = 6
   key.shadow.bias = -0.0005
   key.shadow.normalBias = 0.02
   scene.add(key)
-  const fill = new THREE.DirectionalLight(0xffffff, 0.7)
+  const fill = new THREE.DirectionalLight(0xffffff, 0.8)
   fill.position.set(-3, 2, 2)
   scene.add(fill)
 
   const life = (t: number) => {
     leaves.forEach((l, i) => (l.rotation.x = Math.sin(t * 0.9 + i) * 0.03))
-    led.visible = Math.sin(t * 9) + Math.sin(t * 5.3) > -0.6
   }
-  return { monitor, life }
+  return { monitor: monitorHitbox, life }
 }
 
 const easeInOut = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2)
 
-export default function Scene() {
+export default function Scene({ started = true, onLoaded }: { started?: boolean; onLoaded?: () => void }) {
   const host = useRef<HTMLDivElement>(null)
   const screenEl = useMemo(() => {
     const el = document.createElement('div')
@@ -204,8 +233,42 @@ export default function Scene() {
     return el
   }, [])
   const [mode, setMode] = useState<Mode>('overview')
+  const [typedBegin, setTypedBegin] = useState('')
   const modeRef = useRef<Mode>('overview')
   modeRef.current = mode
+
+  const startedRef = useRef(started)
+  startedRef.current = started
+
+  const onLoadedRef = useRef(onLoaded)
+  onLoadedRef.current = onLoaded
+
+  // Typewriter effect + mechanical typing sound for "Click anywhere to begin"
+  useEffect(() => {
+    if (!started || mode !== 'overview') {
+      setTypedBegin('')
+      return
+    }
+    let idx = 0
+    let intervalId: ReturnType<typeof setInterval> | null = null
+    const startDelay = setTimeout(() => {
+      intervalId = setInterval(() => {
+        idx++
+        const nextStr = BEGIN_TEXT.slice(0, idx)
+        setTypedBegin(nextStr)
+        const ch = BEGIN_TEXT[idx - 1]
+        if (ch) playKeyClick(ch === ' ')
+        if (idx >= BEGIN_TEXT.length && intervalId) {
+          clearInterval(intervalId)
+        }
+      }, 55)
+    }, 650)
+
+    return () => {
+      clearTimeout(startDelay)
+      if (intervalId) clearInterval(intervalId)
+    }
+  }, [started, mode])
 
   useEffect(() => {
     const root = host.current!
@@ -227,17 +290,25 @@ export default function Scene() {
     const cssScene = new THREE.Scene()
     const screenObj = new CSS3DObject(screenEl)
     screenObj.position.copy(SCREEN.center)
-    screenObj.scale.setScalar(SCREEN.w / SCREEN_W)
+    screenObj.rotation.x = SCREEN.rotX
+    // Non-uniform scale so the 1280x720 desktop fills the exact 0.597 x 0.3268 bezel opening
+    screenObj.scale.set(SCREEN.w / SCREEN_W, SCREEN.h / SCREEN_H, 1)
     cssScene.add(screenObj)
 
-    const { monitor, life } = buildDesk(scene)
+    const { monitor, life } = buildDesk(scene, () => {
+      // Pre-compile shaders and render a warm-up frame to upload all textures to GPU before user clicks START
+      gl.compile(scene, camera)
+      gl.render(scene, camera)
+      css.render(cssScene, camera)
+      onLoadedRef.current?.()
+    })
 
-    // Drag to turn around the desk in the overview
+    // Drag to turn around the desk in the overview (360 degrees full rotation)
     const controls = new OrbitControls(camera, gl.domElement)
     Object.assign(controls, {
       enabled: false, enableDamping: true, dampingFactor: 0.08, enablePan: false, rotateSpeed: 0.6,
-      minDistance: 2.4, maxDistance: 9, minPolarAngle: 0.35, maxPolarAngle: 1.4,
-      minAzimuthAngle: -1.35, maxAzimuthAngle: 1.35,
+      minDistance: 2.4, maxDistance: 9, minPolarAngle: 0.35, maxPolarAngle: 1.5,
+      minAzimuthAngle: -Infinity, maxAzimuthAngle: Infinity,
     })
 
     const resize = () => {
@@ -255,7 +326,10 @@ export default function Scene() {
     const zoomPos = (out: THREE.Vector3) => {
       const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))
       const d = Math.max(SCREEN.h / 2 / t, SCREEN.w / 2 / (t * camera.aspect)) * 1.05
-      return out.copy(SCREEN.center).add(new THREE.Vector3(0, 0, d))
+      // Position camera along the monitor's tilted normal so the screen is a flat rectangle
+      const ny = -Math.sin(SCREEN.rotX) * d
+      const nz = Math.cos(SCREEN.rotX) * d
+      return out.copy(SCREEN.center).add(new THREE.Vector3(0, ny, nz))
     }
 
     const pointer = new THREE.Vector2()
@@ -265,8 +339,12 @@ export default function Scene() {
     // A click (not a drag) moves between the views.
     const ray = new THREE.Raycaster()
     let down = { x: 0, y: 0 }
-    const onDown = (e: PointerEvent) => (down = { x: e.clientX, y: e.clientY })
+    const onDown = (e: PointerEvent) => {
+      down = { x: e.clientX, y: e.clientY }
+      playMouseDown()
+    }
     const onUp = (e: PointerEvent) => {
+      playMouseUp()
       if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return
       const m = modeRef.current
       if (m === 'overview') return setMode('desk')
@@ -288,6 +366,7 @@ export default function Scene() {
     const smooth = new THREE.Vector2()
     const toCam = new THREE.Vector3()
     let current: Mode = 'overview'
+    let hasStarted = false
     let t0 = 0
     let dur = 3.2
     const clock = new THREE.Clock()
@@ -296,6 +375,21 @@ export default function Scene() {
       raf = requestAnimationFrame(tick)
       const dt = Math.min(clock.getDelta(), 0.1)
       const t = clock.elapsedTime
+
+      // Hold the intro camera position until the user clicks START
+      if (!startedRef.current) {
+        t0 = t
+        camera.position.copy(INTRO)
+        camera.lookAt(VIEWS.overview.look)
+        gl.render(scene, camera)
+        css.render(cssScene, camera)
+        return
+      }
+      if (!hasStarted) {
+        hasStarted = true
+        t0 = t
+      }
+
       if (modeRef.current !== current) {
         current = modeRef.current
         controls.enabled = false
@@ -358,8 +452,8 @@ export default function Scene() {
         <Desktop zoomed={mode === 'screen'} onEnter={() => setMode(mode === 'overview' ? 'desk' : 'screen')} />,
         screenEl,
       )}
-      <p className={`begin${mode === 'overview' ? '' : ' off'}`}>
-        Click anywhere to begin <span className="blink">_</span>
+      <p className={`begin${started && mode === 'overview' ? '' : ' off'}`}>
+        {typedBegin}<span className="blink">_</span>
       </p>
       <Hud show={mode === 'desk'} onOverview={() => setMode('overview')} />
     </div>

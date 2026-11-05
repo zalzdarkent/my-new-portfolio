@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const NAME = 'Jordan Westlake'
+const NAME = 'Alif Fadillah Ummar'
 
 // Every resource "loaded" during boot; the BIOS list shows the latest eight.
 const RESOURCES = [
@@ -16,18 +16,28 @@ function today() {
   return `${p(d.getMonth() + 1)}/${p(d.getDate())}/${d.getFullYear()}`
 }
 
-export default function Loader({ onStart, leaving }: { onStart: () => void; leaving: boolean }) {
+export default function Loader({
+  onStart,
+  leaving,
+  modelsLoaded,
+}: {
+  onStart: () => void
+  leaving: boolean
+  modelsLoaded: boolean
+}) {
   const [loaded, setLoaded] = useState(0)
-  const done = loaded >= RESOURCES.length
+  const done = loaded >= RESOURCES.length && modelsLoaded
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    if (!done) {
-      const t = setTimeout(() => setLoaded((n) => n + 1), 60)
+    if (loaded < RESOURCES.length) {
+      const t = setTimeout(() => setLoaded((n) => n + 1), 45)
       return () => clearTimeout(t)
     }
-    const t = setTimeout(() => setReady(true), 300)
-    return () => clearTimeout(t)
+    if (done) {
+      const t = setTimeout(() => setReady(true), 200)
+      return () => clearTimeout(t)
+    }
   }, [loaded, done])
 
   const list = RESOURCES.slice(0, loaded).map((r, i) => ({
@@ -40,12 +50,12 @@ export default function Loader({ onStart, leaving }: { onStart: () => void; leav
       <div className={`bios${ready ? ' hidden' : ''}`} aria-hidden={ready}>
         <div className="bios-head">
           <div className="bios-logo">
-            <p>Westlake,</p>
-            <p>Jordan Inc.</p>
+            <p>Fadillah,</p>
+            <p>Alif Inc.</p>
           </div>
           <div>
             <p>Released: 01/01/2000</p>
-            <p>JWBIOS (C)2000 Westlake Jordan Inc.,</p>
+            <p>AFBIOS (C)2000 Fadillah Alif Inc.,</p>
           </div>
         </div>
         <p className="mt48">JWP S13 2000-2022 Special UC131S</p>

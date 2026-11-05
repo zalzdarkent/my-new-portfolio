@@ -1,37 +1,45 @@
 import { useEffect, useRef, useState, type FormEvent, type PointerEvent as RPE, type ReactNode } from 'react'
 import { ThumbPlayer } from './motion'
+import { playKeyClick, playMouseDown, playMouseUp } from './sound'
 import './desktop.css'
 
-export const SCREEN_W = 1024
-export const SCREEN_H = 768
+export const SCREEN_W = 1280
+export const SCREEN_H = 720
 
 type AppId = 'showcase' | 'notes' | 'credits'
-type Win = { id: AppId; x: number; y: number; z: number; min: boolean; closing?: boolean }
+type Win = { id: AppId; x: number; y: number; z: number; min: boolean; max?: boolean; closing?: boolean }
 
 const APPS: Record<AppId, { title: string; icon: IconKind; w: number; h: number }> = {
-  showcase: { title: 'Showcase 2022 - Jordan Westlake', icon: 'computer', w: 900, h: 690 },
-  notes: { title: 'Notepad - readme.txt', icon: 'note', w: 420, h: 300 },
-  credits: { title: 'Credits', icon: 'folder', w: 360, h: 240 },
+  showcase: { title: 'Showcase 2022 - Alif Fadillah Ummar', icon: 'terminal', w: 940, h: 590 },
+  notes: { title: 'Text Editor - readme.txt', icon: 'note', w: 480, h: 360 },
+  credits: { title: 'Credits', icon: 'folder', w: 400, h: 280 },
 }
 
-type IconKind = 'computer' | 'note' | 'folder'
-function Icon({ kind, size = 36 }: { kind: IconKind; size?: number }) {
+type IconKind = 'terminal' | 'note' | 'folder' | 'browser'
+function Icon({ kind, size = 32 }: { kind: IconKind; size?: number }) {
+  if (kind === 'terminal') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+        <rect width="48" height="48" rx="10" fill="#2d0922" />
+        <rect x="2" y="2" width="44" height="44" rx="8" stroke="#E95420" strokeWidth="2" />
+        <path d="M12 16L22 24L12 32" stroke="#4af626" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M24 32H36" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
+      </svg>
+    )
+  }
+  if (kind === 'note') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+        <rect width="48" height="48" rx="10" fill="#333333" />
+        <path d="M14 10H34L38 14V38H14V10Z" fill="#fff" />
+        <path d="M18 18H30M18 24H30M18 30H26" stroke="#555" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    )
+  }
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden>
-      {kind === 'computer' && (
-        <>
-          <rect x="4" y="4" width="24" height="18" fill="#c0c0c0" stroke="#000" />
-          <rect x="7" y="7" width="18" height="12" fill="#1d6b70" />
-          <rect x="10" y="24" width="12" height="4" fill="#c0c0c0" stroke="#000" />
-        </>
-      )}
-      {kind === 'note' && (
-        <>
-          <rect x="7" y="3" width="18" height="26" fill="#fff" stroke="#000" />
-          {[8, 12, 16, 20, 24].map((y) => <rect key={y} x="10" y={y} width="12" height="1.5" fill="#00007b" />)}
-        </>
-      )}
-      {kind === 'folder' && <path d="M3 8h10l2 3h14v16H3z" fill="#f4d35e" stroke="#000" />}
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      <path d="M6 12C6 9.79086 7.79086 8 10 8H20L24 12H38C40.2091 12 42 13.7909 42 16V36C42 38.2091 40.2091 40 38 40H10C7.79086 40 6 38.2091 6 36V12Z" fill="#E95420" />
+      <path d="M6 18H42V36C42 38.2091 40.2091 40 38 40H10C7.79086 40 6 38.2091 6 36V18Z" fill="#FF7F4A" />
     </svg>
   )
 }
@@ -56,7 +64,7 @@ const PROJECTS = [
   { name: 'Trail map', text: 'Offline maps for hikers, with live tracking.', kind: 'map', hue: 140 },
 ] as const
 
-const NAME = 'Jordan Westlake'
+const NAME = 'Alif Fadillah Ummar'
 const NAV = ['Home', 'About', 'Experience', 'Projects', 'Contact'] as const
 type Page = (typeof NAV)[number]
 
@@ -107,15 +115,18 @@ function Showcase() {
     Experience: (
       <>
         <h2>Experience</h2>
-        <ol className="timeline">
+        <div className="timeline">
           {JOBS.map(([when, where, role, text], i) => (
-            <li key={where} style={{ animationDelay: `${0.15 + i * 0.12}s` }}>
-              <span className="when">{when}</span>
-              <h3>{where} <small>— {role}</small></h3>
-              <p>{text}</p>
-            </li>
+            <div key={where} className="timeline-card" style={{ animationDelay: `${0.15 + i * 0.12}s` }}>
+              <div className="timeline-bar" />
+              <div className="timeline-content">
+                <span className="when">{when}</span>
+                <h3>{where} <small>— {role}</small></h3>
+                <p>{text}</p>
+              </div>
+            </div>
           ))}
-        </ol>
+        </div>
       </>
     ),
     Projects: (
@@ -184,13 +195,13 @@ const CONTENT: Record<AppId, ReactNode> = {
   notes: (
     <textarea
       className="notepad"
-      defaultValue={'Thanks for stopping by!\n\nDouble-click the icons on the desktop to open programs.\nPress Esc or click outside the monitor to step back from the desk.'}
+      defaultValue={'Ubuntu 24.04 LTS (Noble Numbat)\n\nWelcome to my interactive desktop!\nClick any app on the desktop or dock on the left.\nPress Esc or click outside the monitor to step back to the desk.'}
     />
   ),
   credits: (
     <div className="pad">
-      <p><b>Design & build</b><br />Jordan Westlake</p>
-      <p><b>Made with</b><br />React, three.js, Remotion and TypeScript</p>
+      <p><b>Design & build</b><br />Alif Fadillah Ummar</p>
+      <p style={{ marginTop: 12 }}><b>Theme & Environment</b><br />Ubuntu Linux (Yaru Dark) with Three.js & React</p>
     </div>
   ),
 }
@@ -198,41 +209,43 @@ const CONTENT: Record<AppId, ReactNode> = {
 function Clock() {
   const [now, setNow] = useState(new Date())
   useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 10000)
+    const t = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(t)
   }, [])
-  return <div className="clock">{now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</div>
+  const dateStr = now.toLocaleDateString([], { month: 'short', day: 'numeric' })
+  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  return <div className="ub-clock">{dateStr} {timeStr}</div>
 }
 
 export default function Desktop({ zoomed, onEnter }: { zoomed: boolean; onEnter: () => void }) {
-  const [wins, setWins] = useState<Win[]>([{ id: 'showcase', x: 104, y: 14, z: 1, min: false }])
-  const [menu, setMenu] = useState(false)
+  const [wins, setWins] = useState<Win[]>([{ id: 'showcase', x: 185, y: 58, z: 1, min: false }])
+  const [launcher, setLauncher] = useState(false)
   const top = useRef(1)
   const root = useRef<HTMLDivElement>(null)
 
   const focus = (id: AppId) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, z: ++top.current, min: false } : w)))
   const open = (id: AppId) => {
-    setMenu(false)
+    setLauncher(false)
     setWins((ws) =>
       ws.some((w) => w.id === id && !w.closing)
         ? ws.map((w) => (w.id === id ? { ...w, z: ++top.current, min: false } : w))
-        : [...ws.filter((w) => w.id !== id), { id, x: 110 + ws.length * 40, y: 40 + ws.length * 36, z: ++top.current, min: false }],
+        : [...ws.filter((w) => w.id !== id), { id, x: 200 + ws.length * 40, y: 70 + ws.length * 30, z: ++top.current, min: false }],
     )
   }
-  // Play the close animation, then drop the window.
   const close = (id: AppId) => {
     setWins((ws) => ws.map((w) => (w.id === id ? { ...w, closing: true } : w)))
     setTimeout(() => setWins((ws) => ws.filter((w) => !(w.id === id && w.closing))), 200)
   }
   const minimize = (id: AppId) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, min: true } : w)))
+  const toggleMax = (id: AppId) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, max: !w.max, z: ++top.current } : w)))
 
-  // Drag a window by its title bar; pointer deltas are in screen pixels, so undo the 3D scale.
   const drag = (id: AppId, e: RPE) => {
     focus(id)
+    const w0 = wins.find((w) => w.id === id)!
+    if (w0.max) return
     const scale = root.current!.getBoundingClientRect().width / SCREEN_W || 1
     const sx = e.clientX
     const sy = e.clientY
-    const w0 = wins.find((w) => w.id === id)!
     let raf = 0
     const move = (ev: PointerEvent) => {
       cancelAnimationFrame(raf)
@@ -241,10 +254,10 @@ export default function Desktop({ zoomed, onEnter }: { zoomed: boolean; onEnter:
           ws.map((w) =>
             w.id === id
               ? {
-                  ...w,
-                  x: Math.min(SCREEN_W - 80, Math.max(-200, w0.x + (ev.clientX - sx) / scale)),
-                  y: Math.min(SCREEN_H - 60, Math.max(0, w0.y + (ev.clientY - sy) / scale)),
-                }
+                ...w,
+                x: Math.min(SCREEN_W - 80, Math.max(60, w0.x + (ev.clientX - sx) / scale)),
+                y: Math.min(SCREEN_H - 60, Math.max(32, w0.y + (ev.clientY - sy) / scale)),
+              }
               : w,
           ),
         ),
@@ -262,67 +275,116 @@ export default function Desktop({ zoomed, onEnter }: { zoomed: boolean; onEnter:
   const front = Math.max(0, ...live.map((w) => w.z))
 
   return (
-    <div className="os" ref={root}>
+    <div
+      className="os"
+      ref={root}
+      onPointerDownCapture={() => playMouseDown()}
+      onPointerUpCapture={() => playMouseUp()}
+      onKeyDownCapture={(e) => playKeyClick(e.key === ' ')}
+    >
+      {/* Top Status Bar */}
+      <div className="ub-topbar">
+        <button className={`ub-activities${launcher ? ' active' : ''}`} onClick={() => setLauncher((v) => !v)}>
+          Activities
+        </button>
+        <Clock />
+        <div className="ub-status">
+          <span>🔊</span>
+          <span>📶</span>
+          <span>🔋 100%</span>
+          <span>⏻</span>
+        </div>
+      </div>
+
+      {/* Ubuntu Left Dock */}
+      <div className="ub-dock">
+        {(Object.keys(APPS) as AppId[]).map((id) => {
+          const isOpen = wins.some((w) => w.id === id && !w.closing && !w.min)
+          return (
+            <button
+              key={id}
+              className={`dock-icon${isOpen ? ' active' : ''}`}
+              title={APPS[id].title}
+              onClick={() => open(id)}
+            >
+              <Icon kind={APPS[id].icon} size={28} />
+            </button>
+          )
+        })}
+        <button
+          className={`dock-icon apps-grid${launcher ? ' active' : ''}`}
+          title="Show Applications"
+          onClick={() => setLauncher((v) => !v)}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            {[4, 12, 20].map((cx) =>
+              [4, 12, 20].map((cy) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="2" />),
+            )}
+          </svg>
+        </button>
+      </div>
+
+      {/* Desktop App Icons */}
       <div className="icons">
         {(Object.keys(APPS) as AppId[]).map((id, i) => (
           <button
             key={id}
             className="icon"
             style={{ animationDelay: `${0.1 + i * 0.08}s` }}
+            onClick={() => open(id)}
             onDoubleClick={() => open(id)}
-            onPointerUp={(e) => e.pointerType === 'touch' && open(id)}
           >
-            <Icon kind={APPS[id].icon} />
+            <Icon kind={APPS[id].icon} size={36} />
             <span>{APPS[id].title.split(' - ')[0]}</span>
           </button>
         ))}
       </div>
 
+      {/* Windows */}
       {wins.map((w) => (
         <div
           key={w.id}
-          className={`win${w.min ? ' min' : ''}${w.closing ? ' closing' : ''}`}
-          style={{ left: w.x, top: w.y, width: APPS[w.id].w, height: APPS[w.id].h, zIndex: w.z }}
+          className={`win${w.min ? ' min' : ''}${w.max ? ' max' : ''}${w.closing ? ' closing' : ''}`}
+          style={
+            w.max
+              ? { left: 60, top: 32, width: SCREEN_W - 60, height: SCREEN_H - 32, zIndex: w.z, borderRadius: 0 }
+              : { left: w.x, top: w.y, width: APPS[w.id].w, height: APPS[w.id].h, zIndex: w.z }
+          }
           onPointerDown={() => w.z !== front && focus(w.id)}
         >
-          <div className={`title${w.z === front ? '' : ' idle'}`} onPointerDown={(e) => drag(w.id, e)}>
-            <Icon kind={APPS[w.id].icon} size={16} />
-            <span>{APPS[w.id].title}</span>
-            <button onPointerDown={(e) => e.stopPropagation()} onClick={() => minimize(w.id)} aria-label="Minimize">_</button>
-            <button onPointerDown={(e) => e.stopPropagation()} onClick={() => close(w.id)} aria-label="Close">×</button>
+          <div
+            className={`title${w.z === front ? '' : ' idle'}`}
+            onPointerDown={(e) => drag(w.id, e)}
+            onDoubleClick={() => toggleMax(w.id)}
+          >
+            <div className="win-title-text">{APPS[w.id].title}</div>
+            <div className="win-controls">
+              <button className="win-btn min" onPointerDown={(e) => e.stopPropagation()} onClick={() => minimize(w.id)} aria-label="Minimize">−</button>
+              <button className="win-btn max" onPointerDown={(e) => e.stopPropagation()} onClick={() => toggleMax(w.id)} aria-label="Maximize">□</button>
+              <button className="win-btn close" onPointerDown={(e) => e.stopPropagation()} onClick={() => close(w.id)} aria-label="Close">✕</button>
+            </div>
           </div>
           <div className="body">{CONTENT[w.id]}</div>
         </div>
       ))}
 
-      <div className={`menu${menu ? ' open' : ''}`}>
-        <div className="menu-band">Westlake 2000</div>
-        <div>
-          {(Object.keys(APPS) as AppId[]).map((id) => (
-            <button key={id} onClick={() => open(id)}>
-              <Icon kind={APPS[id].icon} size={24} /> {APPS[id].title.split(' - ')[0]}
-            </button>
-          ))}
+      {/* Ubuntu Activities / App Launcher Overlay */}
+      {launcher && (
+        <div className="ub-launcher" onClick={() => setLauncher(false)}>
+          <div className="ub-launcher-box" onClick={(e) => e.stopPropagation()}>
+            <h3>Applications</h3>
+            <div className="ub-launcher-grid">
+              {(Object.keys(APPS) as AppId[]).map((id) => (
+                <button key={id} className="ub-launcher-item" onClick={() => open(id)}>
+                  <Icon kind={APPS[id].icon} size={48} />
+                  <span>{APPS[id].title.split(' - ')[0]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="taskbar">
-        <button className={`startbtn${menu ? ' down' : ''}`} onClick={() => setMenu((m) => !m)}>
-          <b>Start</b>
-        </button>
-        {wins.filter((w) => !w.closing).map((w) => (
-          <button
-            key={w.id}
-            className={`task${w.z === front && !w.min ? ' down' : ''}`}
-            onClick={() => (w.z === front && !w.min ? minimize(w.id) : focus(w.id))}
-          >
-            <Icon kind={APPS[w.id].icon} size={16} /> {APPS[w.id].title}
-          </button>
-        ))}
-        <Clock />
-      </div>
-
-      <div className="crt" />
       {!zoomed && <div className="shield" onClick={onEnter} />}
     </div>
   )
