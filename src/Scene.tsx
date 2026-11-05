@@ -79,9 +79,9 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     screenObj.scale.set(SCREEN.w / SCREEN_W, SCREEN.h / SCREEN_H, 1)
     cssScene.add(screenObj)
 
-    const gl = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    const gl = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' })
     gl.setClearColor(0xd4d2ce, 1)
-    gl.setPixelRatio(Math.min(devicePixelRatio, 2))
+    gl.setPixelRatio(Math.min(devicePixelRatio, 1.5))
     gl.shadowMap.enabled = true
     gl.shadowMap.type = THREE.PCFSoftShadowMap
     gl.toneMapping = THREE.NeutralToneMapping

@@ -203,9 +203,9 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
   const key = new THREE.DirectionalLight(0xffffff, 2.5)
   key.position.set(0.6, 5, 2.0)
   key.castShadow = true
-  key.shadow.mapSize.set(2048, 2048)
-  Object.assign(key.shadow.camera, { left: -2.2, right: 2.2, top: 2.2, bottom: -2.2, near: 0.5, far: 10 })
-  key.shadow.radius = 6
+  key.shadow.mapSize.set(1024, 1024)
+  Object.assign(key.shadow.camera, { left: -2.0, right: 2.0, top: 2.0, bottom: -2.0, near: 0.5, far: 9 })
+  key.shadow.radius = 3
   key.shadow.bias = -0.0005
   key.shadow.normalBias = 0.02
   scene.add(key)
