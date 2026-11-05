@@ -6,10 +6,10 @@ const NAME = 'Alif Fadillah Ummar'
 // Matrix / Hacker BIOS boot diagnostic sequence
 const BOOT_LOGS = [
   { prefix: '[INIT]', text: 'Probing hardware interfaces & PCI buses...', ok: 'DONE' },
-  { prefix: '[CPU ]', text: 'AMD Ryzen 9 5900X 12-Core Processor @ 3.70GHz', ok: 'OK' },
-  { prefix: '[MEM ]', text: 'DDR4 3200MHz Dual-Channel 32768MB initialized', ok: '100%' },
-  { prefix: '[GPU ]', text: 'NVIDIA GeForce RTX 3080 10GB GDDR6X Vulkan/GL', ok: 'READY' },
-  { prefix: '[SSD ]', text: 'NVMe SAMSUNG 980 PRO 1TB PCIe Gen4 x4', ok: 'MOUNTED' },
+  { prefix: '[CPU ]', text: 'AMD Ryzen Threadripper PRO 9995WX 96-Core Processor @ 2.50GHz', ok: 'OK' },
+  { prefix: '[MEM ]', text: 'DDR5 6400MT/s ECC Registered RDIMM Octa-Channel 2TB Initialized', ok: '100%' },
+  { prefix: '[GPU ]', text: 'NVIDIA RTX PRO 6000 Blackwell Workstation Edition 96GB GDDR7 ECC Vulkan 1.3/OpenGL 4.6', ok: 'READY' },
+  { prefix: '[SSD ]', text: 'NVMe SAMSUNG 9100 PRO 8TB PCIe Gen5 x4 NVMe 2.0 M.2', ok: 'MOUNTED' },
   { prefix: '[NET ]', text: 'Intel I225-V 2.5GbE Controller Link Speed 1000Mbps', ok: 'UP' },
   { prefix: '[SEC ]', text: 'Decryption keys loaded: SHA256-ECDSA Handshake', ok: 'VERIFIED' },
   { prefix: '[MODL]', text: 'Loading 3D asset pipeline: GLTF Mesh & Texture streaming', ok: 'SYNCED' },
