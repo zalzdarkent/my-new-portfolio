@@ -121,7 +121,7 @@ html, body, #root {
   padding: 4px var(--s16);
   line-height: 19px;
   white-space: nowrap;
-  z-index: 2;
+  z-index: 5;
   pointer-events: none;
   transition: opacity 0.5s, transform 0.5s;
 }
@@ -134,7 +134,7 @@ html, body, #root {
   display: grid;
   justify-items: start;
   gap: 4px;
-  z-index: 2;
+  z-index: 5;
   transition: opacity 0.6s 0.4s, transform 0.6s 0.4s;
 }
 .hud.off { opacity: 0; transform: translateY(-8px); pointer-events: none; transition-delay: 0s; }

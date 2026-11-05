@@ -87,7 +87,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     gl.toneMapping = THREE.NeutralToneMapping
     gl.domElement.style.position = 'absolute'
     gl.domElement.style.inset = '0'
-    gl.domElement.style.zIndex = '2'
+    gl.domElement.style.zIndex = '1'
     root.appendChild(gl.domElement)
 
     const { monitor, life } = buildDesk(scene, () => {
@@ -150,6 +150,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     const onUp = (e: PointerEvent) => {
       playMouseUp()
       if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return
+      if ((e.target as HTMLElement | null)?.closest?.('.hud')) return
       const m = modeRef.current
       if (m === 'overview') return setMode('desk')
       if (m === 'screen' && (e.target as HTMLElement | null)?.closest?.('.os')) return
