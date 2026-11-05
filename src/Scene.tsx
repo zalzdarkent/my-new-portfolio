@@ -68,13 +68,6 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     camera.position.copy(INTRO)
     const look = VIEWS.overview.look.clone()
 
-    const gl = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-    gl.setPixelRatio(Math.min(devicePixelRatio, 2))
-    gl.shadowMap.enabled = true
-    gl.shadowMap.type = THREE.PCFSoftShadowMap
-    gl.toneMapping = THREE.NeutralToneMapping
-    root.appendChild(gl.domElement)
-
     const css = new CSS3DRenderer()
     css.domElement.className = 'css3d'
     root.appendChild(css.domElement)
@@ -85,6 +78,17 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     // Non-uniform scale so the 1280x720 desktop fills the exact 0.597 x 0.3268 bezel opening
     screenObj.scale.set(SCREEN.w / SCREEN_W, SCREEN.h / SCREEN_H, 1)
     cssScene.add(screenObj)
+
+    const gl = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    gl.setClearColor(0xd4d2ce, 1)
+    gl.setPixelRatio(Math.min(devicePixelRatio, 2))
+    gl.shadowMap.enabled = true
+    gl.shadowMap.type = THREE.PCFSoftShadowMap
+    gl.toneMapping = THREE.NeutralToneMapping
+    gl.domElement.style.position = 'absolute'
+    gl.domElement.style.inset = '0'
+    gl.domElement.style.zIndex = '2'
+    root.appendChild(gl.domElement)
 
     const { monitor, life } = buildDesk(scene, () => {
       // Pre-compile shaders and render a warm-up frame to upload all textures to GPU before user clicks START
@@ -148,56 +152,18 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return
       const m = modeRef.current
       if (m === 'overview') return setMode('desk')
+      if (m === 'screen' && (e.target as HTMLElement | null)?.closest?.('.os')) return
       ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera)
       const hit = ray.intersectObject(monitor, true).length > 0
       if (m === 'desk' && hit) setMode('screen')
       if (m === 'screen' && !hit) setMode('desk')
     }
-    gl.domElement.addEventListener('pointerdown', onDown)
-    gl.domElement.addEventListener('pointerup', onUp)
+    root.addEventListener('pointerdown', onDown)
+    root.addEventListener('pointerup', onUp)
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && modeRef.current === 'screen' && setMode('desk')
     addEventListener('keydown', onKey)
 
-    // Corners used to check 2D bounding-box occlusion between PC Case and Monitor Screen
-    const pcCorners = [
-      new THREE.Vector3(0.46, 0.76, -0.07),
-      new THREE.Vector3(0.64, 0.76, -0.07),
-      new THREE.Vector3(0.46, 1.08, -0.07),
-      new THREE.Vector3(0.64, 1.08, -0.07),
-      new THREE.Vector3(0.46, 0.76, 0.27),
-      new THREE.Vector3(0.64, 0.76, 0.27),
-      new THREE.Vector3(0.46, 1.08, 0.27),
-      new THREE.Vector3(0.64, 1.08, 0.27),
-    ]
-    const screenCorners = [
-      new THREE.Vector3(-0.36, 0.85, 0.05),
-      new THREE.Vector3(0.24, 0.85, 0.05),
-      new THREE.Vector3(-0.36, 1.18, 0.05),
-      new THREE.Vector3(0.24, 1.18, 0.05),
-    ]
-
-    const isPcOccludingScreen = () => {
-      let pcMinX = Infinity, pcMaxX = -Infinity, pcMinY = Infinity, pcMaxY = -Infinity, pcMinZ = Infinity
-      for (const c of pcCorners) {
-        const p = c.clone().project(camera)
-        if (p.x < pcMinX) pcMinX = p.x
-        if (p.x > pcMaxX) pcMaxX = p.x
-        if (p.y < pcMinY) pcMinY = p.y
-        if (p.y > pcMaxY) pcMaxY = p.y
-        if (p.z < pcMinZ) pcMinZ = p.z
-      }
-      let sMinX = Infinity, sMaxX = -Infinity, sMinY = Infinity, sMaxY = -Infinity, sMaxZ = -Infinity
-      for (const c of screenCorners) {
-        const p = c.clone().project(camera)
-        if (p.x < sMinX) sMinX = p.x
-        if (p.x > sMaxX) sMaxX = p.x
-        if (p.y < sMinY) sMinY = p.y
-        if (p.y > sMaxY) sMaxY = p.y
-        if (p.z < sMaxZ) sMaxZ = p.z
-      }
-      const overlap = !(pcMaxX < sMinX || pcMinX > sMaxX || pcMaxY < sMinY || pcMinY > sMaxY)
-      return overlap && pcMinZ < sMaxZ
-    }
+    const screenNormal = new THREE.Vector3(0, -Math.sin(SCREEN.rotX), Math.cos(SCREEN.rotX))
 
     // Every move is an eased tween from where the camera is to the goal of the current view.
     const goal = new THREE.Vector3()
@@ -265,11 +231,11 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
         camera.lookAt(look)
       }
 
-      // The HTML screen always draws on top, so hide it when looking from behind the monitor or when the PC case is in front of it.
+      // The WebGL canvas sits on top of CSS3D and punches a depth-tested transparent hole at the screen.
+      // Only let pointer events pass through to the CSS3D Ubuntu screen when zoomed into 'screen' mode.
+      gl.domElement.style.pointerEvents = current === 'screen' ? 'none' : 'auto'
       toCam.copy(camera.position).sub(SCREEN.center)
-      const facingFront = toCam.z > 0.05
-      const occluded = isPcOccludingScreen()
-      screenEl.style.visibility = facingFront && !occluded ? 'visible' : 'hidden'
+      screenEl.style.visibility = toCam.dot(screenNormal) > 0.02 ? 'visible' : 'hidden'
 
       life(t)
       gl.render(scene, camera)
@@ -282,6 +248,8 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       removeEventListener('resize', resize)
       removeEventListener('pointermove', onMove)
       removeEventListener('keydown', onKey)
+      root.removeEventListener('pointerdown', onDown)
+      root.removeEventListener('pointerup', onUp)
       controls.dispose()
       gl.dispose()
       gl.domElement.remove()

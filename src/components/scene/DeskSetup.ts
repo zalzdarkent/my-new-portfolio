@@ -43,20 +43,27 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
   }
   add(scene, box(0.02, 0.3, 0.7, C.metal), 0.85, 0.575, 0)
 
-  // Interactive target monitor group for clicks/zooming
+  // Interactive target monitor group for clicks/zooming.
+  // Uses NoBlending with opacity 0 to punch a depth-tested transparent hole in the WebGL canvas,
+  // revealing the CSS3DRenderer Ubuntu screen underneath while allowing 3D objects in front
+  // (PC case, gaming chair, mug, speakers) to occlude the screen pixel-by-pixel!
+  const holeMat = new THREE.MeshBasicMaterial({
+    color: 0x000000,
+    opacity: 0,
+    blending: THREE.NoBlending,
+    side: THREE.FrontSide,
+  })
   const monitorHitbox = new THREE.Group()
-  const glass = new THREE.Mesh(
-    new THREE.PlaneGeometry(SCREEN.w, SCREEN.h),
-    new THREE.MeshBasicMaterial({ color: 0x1d0718 }),
-  )
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(SCREEN.w, SCREEN.h), holeMat)
   glass.position.copy(SCREEN.center)
   glass.rotation.x = SCREEN.rotX
+  glass.castShadow = false
+  glass.receiveShadow = false
   monitorHitbox.add(glass)
   scene.add(monitorHitbox)
 
   // Load both Gaming PC Setup and Gaming Chair in parallel before start screen finishes
   const gltfLoader = new GLTFLoader()
-  const screenBackMat = new THREE.MeshBasicMaterial({ color: 0x1d0718 })
 
   Promise.all([
     gltfLoader.loadAsync('./gaming-pc/scene.gltf'),
@@ -66,24 +73,33 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
       const pcModel = pcGltf.scene
 
       pcModel.traverse((child) => {
-        // Hide the stock wood desk from the gaming-pc GLTF model
-        if (child.name === 'Cube_0' || child.name === 'Object_4' || child.name.toLowerCase().includes('table')) {
-          child.visible = false
-        }
-        // Replace the old GTR car wallpaper mesh on the monitor with dark Ubuntu backing
+        // Hide the stock wood desk and old screen overlay stickers from the gaming-pc GLTF model
         if (
-          child.name === 'MY SCREEN_142' ||
-          child.name === 'Object_288' ||
+          child.name === 'Cube_0' ||
+          child.name === 'Object_4' ||
+          child.name.toLowerCase().includes('table') ||
           child.name === 'gallerymodel_139' ||
           child.name === 'Object_282' ||
           child.name === 'bg2_141' ||
           child.name === 'Object_286'
         ) {
-          if (child instanceof THREE.Mesh) {
-            child.material = screenBackMat
-          }
+          child.visible = false
         }
-        if (child instanceof THREE.Mesh) {
+        // Replace the old GTR car wallpaper mesh on the monitor with the NoBlending hole-punch material
+        if (child.name === 'MY SCREEN_142' || child.name === 'Object_288') {
+          if (child instanceof THREE.Mesh) {
+            child.material = holeMat
+            child.castShadow = false
+            child.receiveShadow = false
+          }
+        } else if (child instanceof THREE.Mesh) {
+          const mats = Array.isArray(child.material) ? child.material : [child.material]
+          for (const m of mats) {
+            if (m) {
+              m.transparent = false
+              m.depthWrite = true
+            }
+          }
           child.castShadow = true
           child.receiveShadow = true
           child.frustumCulled = false
