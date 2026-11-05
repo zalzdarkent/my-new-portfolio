@@ -14,17 +14,17 @@ const BEGIN_TEXT = 'Click anywhere to begin '
 
 // Exact inner bezel opening of the Gigabyte monitor in world units:
 // X: [-0.3598, 0.2371] -> width = 0.5969, center.x = -0.06135
-// Y: [0.8671, 1.1929]  -> height = 0.3268, center.y = 1.0298
+// Y: [0.8546, 1.1804]  -> height = 0.3268, center.y = 1.0173
 const SCREEN = {
   w: 0.597,
   h: 0.3268,
-  center: new THREE.Vector3(-0.06135, 1.0298, 0.053),
+  center: new THREE.Vector3(-0.06135, 1.0173, 0.053),
   rotX: -0.0698,
 }
 const INTRO = new THREE.Vector3(-6, 6.5, 9.5)
 const VIEWS = {
   overview: { pos: new THREE.Vector3(-3.1, 3.2, 4.9), look: new THREE.Vector3(0.05, 0.65, 0.1), fit: 1.3 },
-  desk: { pos: new THREE.Vector3(-0.06, 1.05, 1.15), look: new THREE.Vector3(-0.06, 1.025, 0.05), fit: 1.35 },
+  desk: { pos: new THREE.Vector3(-0.06, 1.04, 1.15), look: new THREE.Vector3(-0.06, 1.012, 0.05), fit: 1.35 },
 }
 
 // Palette sampled from desk scene
@@ -124,7 +124,7 @@ function buildDesk(scene: THREE.Scene, onModelsReady: () => void) {
       const S = 0.6
       pcModel.scale.setScalar(S)
       pcModel.rotation.y = -Math.PI / 2
-      pcModel.position.set(0.22, 0.748, 0.18)
+      pcModel.position.set(0.22, 0.7355, 0.18)
       monitorHitbox.add(pcModel)
 
       const chairModel = chairGltf.scene
