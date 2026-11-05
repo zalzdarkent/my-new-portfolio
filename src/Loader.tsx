@@ -37,7 +37,7 @@ export default function Loader({
   const [ready, setReady] = useState(false)
   const [memCount, setMemCount] = useState(1024)
 
-  // Memory counter tick
+  // Memory counter tick (smooth realistic hardware probe ~4 seconds)
   useEffect(() => {
     const t = setInterval(() => {
       setMemCount((m) => {
@@ -45,27 +45,50 @@ export default function Loader({
           clearInterval(t)
           return 32768
         }
-        return m + 3550
+        return Math.min(32768, m + 680)
       })
-    }, 40)
+    }, 80)
     return () => clearInterval(t)
   }, [])
 
-  // Boot log step ticker with audio blips
+  // Boot log step ticker with audio blips (relaxed, cinematic hacker cadence ~5-6 seconds)
   useEffect(() => {
     if (step < BOOT_LOGS.length) {
-      const delay = step === 0 ? 120 : 65 + Math.random() * 45
+      // Step-specific pacing: each line prints deliberately so user can read and listen
+      const stepDelays = [
+        650, // [INIT] Probing hardware interfaces
+        480, // [CPU ] Ryzen 9 5900X
+        520, // [MEM ] DDR4 32768MB
+        500, // [GPU ] RTX 3080
+        450, // [SSD ] NVMe 980 PRO
+        420, // [NET ] Intel 2.5GbE
+        540, // [SEC ] Decryption keys & handshake
+        680, // [MODL] 3D mesh & textures
+        600, // [ROOM] Depth buffer & canvas
+        520, // [OS  ] Ubuntu kernel boot
+      ]
+      const delay = stepDelays[step] ?? 500
       const t = setTimeout(() => {
         setStep((s) => s + 1)
-        playBootBlip(step % 3 === 0)
+        playBootBlip(step % 2 === 0)
       }, delay)
       return () => clearTimeout(t)
     }
 
     if (done && !ready) {
-      playBiosBeep()
-      const t = setTimeout(() => setReady(true), 350)
-      return () => clearTimeout(t)
+      // Brief pause on completed terminal output before POST beep & popup reveal
+      const beepTimer = setTimeout(() => {
+        playBiosBeep()
+      }, 900)
+
+      const revealTimer = setTimeout(() => {
+        setReady(true)
+      }, 1600)
+
+      return () => {
+        clearTimeout(beepTimer)
+        clearTimeout(revealTimer)
+      }
     }
   }, [step, done, ready])
 
