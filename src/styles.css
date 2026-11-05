@@ -39,7 +39,7 @@ html, body, #root {
   inset: 0;
   z-index: 10;
   background: #060907;
-  color: #00ff66;
+  color: #ffffff;
   font-family: 'Courier New', Courier, monospace;
   overflow: hidden;
   transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1);
@@ -57,7 +57,7 @@ html, body, #root {
   ), linear-gradient(
     90deg,
     rgba(255, 0, 0, 0.03),
-    rgba(0, 255, 0, 0.01),
+    rgba(255, 255, 255, 0.01),
     rgba(0, 0, 255, 0.03)
   );
   background-size: 100% 3px, 6px 100%;
@@ -71,8 +71,8 @@ html, body, #root {
   left: 0;
   right: 0;
   height: 8px;
-  background: rgba(0, 255, 102, 0.15);
-  box-shadow: 0 0 12px rgba(0, 255, 102, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
   pointer-events: none;
   opacity: 0.7;
   animation: crtScan 6s linear infinite;
@@ -92,7 +92,7 @@ html, body, #root {
   flex-direction: column;
   transition: opacity 0.3s;
   z-index: 1;
-  text-shadow: 0 0 4px rgba(0, 255, 102, 0.4);
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.25);
 }
 .bios.hidden { opacity: 0; pointer-events: none; }
 
@@ -106,8 +106,8 @@ html, body, #root {
   font-family: monospace;
   font-size: clamp(8px, 1.2vw, 13px);
   line-height: 1.1;
-  color: #00ff66;
-  text-shadow: 0 0 8px rgba(0, 255, 102, 0.8);
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
   margin: 0;
 }
 
@@ -119,7 +119,7 @@ html, body, #root {
   letter-spacing: 0.5px;
 }
 .bios-subtext {
-  color: #559966;
+  color: #999999;
   font-size: 11px;
 }
 
@@ -127,9 +127,9 @@ html, body, #root {
   color: #ffb300;
   text-shadow: 0 0 6px rgba(255, 179, 0, 0.6);
 }
-.glow-green {
-  color: #00ff66;
-  text-shadow: 0 0 6px rgba(0, 255, 102, 0.8);
+.status-neutral {
+  color: #ffffff;
+  text-shadow: none;
 }
 
 .hacker-bar {
@@ -137,11 +137,11 @@ html, body, #root {
   flex-wrap: wrap;
   gap: 16px 32px;
   padding: 8px 12px;
-  background: rgba(0, 255, 102, 0.05);
-  border: 1px dashed rgba(0, 255, 102, 0.3);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.22);
   font-size: 12px;
   letter-spacing: 1px;
-  color: #77dd99;
+  color: #b8b8b8;
 }
 
 .hacker-list {
@@ -170,14 +170,14 @@ html, body, #root {
 }
 
 .log-text {
-  color: #c0dec0;
+  color: #c8c8c8;
   flex-shrink: 0;
 }
 
 .log-dots {
   flex: 1;
   overflow: hidden;
-  color: #1a4422;
+  color: #505050;
   letter-spacing: 2px;
   font-size: 10px;
 }
@@ -195,7 +195,7 @@ html, body, #root {
 .hacker-foot {
   margin-top: auto;
   padding-top: 16px;
-  border-top: 1px solid rgba(0, 255, 102, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -212,7 +212,7 @@ html, body, #root {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
-  color: #559966;
+  color: #999999;
   font-size: 11px;
 }
 
@@ -230,9 +230,9 @@ html, body, #root {
 }
 
 .hacker-popup {
-  border: 1px solid #00ff66;
-  background: #0a0e0b;
-  box-shadow: 0 0 25px rgba(0, 255, 102, 0.25), inset 0 0 15px rgba(0, 255, 102, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: #0b0b0b;
+  box-shadow: 0 0 25px rgba(255, 255, 255, 0.12), inset 0 0 15px rgba(255, 255, 255, 0.04);
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -246,9 +246,9 @@ html, body, #root {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #111a13;
+  background: #151515;
   padding: 10px 14px;
-  border-bottom: 1px solid rgba(0, 255, 102, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .term-circle {
@@ -259,13 +259,13 @@ html, body, #root {
 }
 .term-circle.red { background: #ff4d4d; box-shadow: 0 0 6px #ff4d4d; }
 .term-circle.yellow { background: #ffd000; box-shadow: 0 0 6px #ffd000; }
-.term-circle.green { background: #00ff66; box-shadow: 0 0 6px #00ff66; }
+.term-circle.neutral { background: #9ca3af; box-shadow: 0 0 6px rgba(156, 163, 175, 0.45); }
 
 .term-title {
   margin-left: 6px;
   font-size: 11px;
   letter-spacing: 1px;
-  color: #77dd99;
+  color: #b8b8b8;
 }
 
 .hacker-popup .popup-text {
@@ -293,37 +293,37 @@ html, body, #root {
 
 .popup-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 102, 0.5), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
   margin: 12px 0 8px 0;
 }
 
 .popup-instruction {
   font-size: 12px;
-  color: #88c099;
+  color: #b0b0b0;
   letter-spacing: 0.5px;
 }
 
 .hacker-start {
   margin: 0 24px 24px 24px;
-  border: 1px solid #00ff66;
-  background: rgba(0, 255, 102, 0.08);
-  color: #00ff66;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
   font-family: inherit;
   font-size: 14px;
   font-weight: bold;
   letter-spacing: 2px;
   padding: 12px 24px;
   cursor: pointer;
-  box-shadow: 0 0 12px rgba(0, 255, 102, 0.2);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.12);
   transition: all 0.2s ease;
   position: relative;
   text-align: center;
 }
 
 .hacker-start:hover {
-  background: #00ff66;
+  background: #ffffff;
   color: #000000;
-  box-shadow: 0 0 24px rgba(0, 255, 102, 0.7);
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.45);
   transform: translateY(-1px);
 }
 

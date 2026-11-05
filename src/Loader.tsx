@@ -37,7 +37,7 @@ export default function Loader({
   const [ready, setReady] = useState(false)
   const [memCount, setMemCount] = useState(1024)
 
-  // Memory counter tick (smooth realistic hardware probe ~4 seconds)
+  // Memory counter tick
   useEffect(() => {
     const t = setInterval(() => {
       setMemCount((m) => {
@@ -51,23 +51,14 @@ export default function Loader({
     return () => clearInterval(t)
   }, [])
 
-  // Boot log step ticker with audio blips (relaxed, cinematic hacker cadence ~5-6 seconds)
+  // Boot log step ticker with audio blips
   useEffect(() => {
     if (step < BOOT_LOGS.length) {
-      // Step-specific pacing: each line prints deliberately so user can read and listen
       const stepDelays = [
-        650, // [INIT] Probing hardware interfaces
-        480, // [CPU ] Ryzen 9 5900X
-        520, // [MEM ] DDR4 32768MB
-        500, // [GPU ] RTX 3080
-        450, // [SSD ] NVMe 980 PRO
-        420, // [NET ] Intel 2.5GbE
-        540, // [SEC ] Decryption keys & handshake
-        680, // [MODL] 3D mesh & textures
-        600, // [ROOM] Depth buffer & canvas
-        520, // [OS  ] Ubuntu kernel boot
+        340, 255, 275, 260, 235,
+        220, 280, 350, 310, 275,
       ]
-      const delay = stepDelays[step] ?? 500
+      const delay = stepDelays[step] ?? 325
       const t = setTimeout(() => {
         setStep((s) => s + 1)
         playBootBlip(step % 2 === 0)
@@ -76,14 +67,13 @@ export default function Loader({
     }
 
     if (done && !ready) {
-      // Brief pause on completed terminal output before POST beep & popup reveal
       const beepTimer = setTimeout(() => {
         playBiosBeep()
-      }, 900)
+      }, 350)
 
       const revealTimer = setTimeout(() => {
         setReady(true)
-      }, 1600)
+      }, 700)
 
       return () => {
         clearTimeout(beepTimer)
@@ -133,12 +123,12 @@ export default function Loader({
               <span className="log-prefix">{log.prefix}</span>
               <span className="log-text">{log.text}</span>
               <span className="log-dots">............................</span>
-              <span className="log-status glow-green">[{log.ok}]</span>
+              <span className="log-status status-neutral">[{log.ok}]</span>
             </div>
           ))}
           {step < BOOT_LOGS.length && (
             <p className="hacker-prompt">
-              <span className="glow-green">root@afu-box:~$</span> <span className="blink">█</span>
+              <span className="status-neutral">root@afu-box:~$</span> <span className="blink">█</span>
             </p>
           )}
         </div>
@@ -147,7 +137,7 @@ export default function Loader({
         <div className="bios-foot hacker-foot">
           <div className="foot-status">
             {done ? (
-              <p className="glow-green">
+              <p className="status-neutral">
                 [SYSTEM READY] All security protocols cleared. Initializing 3D Interactive Workspace...
               </p>
             ) : (
@@ -170,7 +160,7 @@ export default function Loader({
             <div className="popup-header-bar">
               <span className="term-circle red" />
               <span className="term-circle yellow" />
-              <span className="term-circle green" />
+              <span className="term-circle neutral" />
               <span className="term-title">ACCESS_GRANTED // TERMINAL_READY</span>
             </div>
             <div className="popup-text">
