@@ -58,8 +58,8 @@ export default function Loader({
             <p>AFBIOS (C)2000 Fadillah Alif Inc.,</p>
           </div>
         </div>
-        <p className="mt48">JWP S13 2000-2022 Special UC131S</p>
-        <p className="mt16">JWP Showcase(tm) XX 113</p>
+        <p className="mt48">AFU S13 2000-2022 Special UC131S</p>
+        <p className="mt16">AFU Showcase(tm) XX 113</p>
         <p>Checking RAM : 14000 OK</p>
         {done && <p className="mt32">FINISHED LOADING RESOURCES</p>}
         <div className="bios-list">
