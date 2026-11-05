@@ -158,6 +158,47 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && modeRef.current === 'screen' && setMode('desk')
     addEventListener('keydown', onKey)
 
+    // Corners used to check 2D bounding-box occlusion between PC Case and Monitor Screen
+    const pcCorners = [
+      new THREE.Vector3(0.46, 0.76, -0.07),
+      new THREE.Vector3(0.64, 0.76, -0.07),
+      new THREE.Vector3(0.46, 1.08, -0.07),
+      new THREE.Vector3(0.64, 1.08, -0.07),
+      new THREE.Vector3(0.46, 0.76, 0.27),
+      new THREE.Vector3(0.64, 0.76, 0.27),
+      new THREE.Vector3(0.46, 1.08, 0.27),
+      new THREE.Vector3(0.64, 1.08, 0.27),
+    ]
+    const screenCorners = [
+      new THREE.Vector3(-0.36, 0.85, 0.05),
+      new THREE.Vector3(0.24, 0.85, 0.05),
+      new THREE.Vector3(-0.36, 1.18, 0.05),
+      new THREE.Vector3(0.24, 1.18, 0.05),
+    ]
+
+    const isPcOccludingScreen = () => {
+      let pcMinX = Infinity, pcMaxX = -Infinity, pcMinY = Infinity, pcMaxY = -Infinity, pcMinZ = Infinity
+      for (const c of pcCorners) {
+        const p = c.clone().project(camera)
+        if (p.x < pcMinX) pcMinX = p.x
+        if (p.x > pcMaxX) pcMaxX = p.x
+        if (p.y < pcMinY) pcMinY = p.y
+        if (p.y > pcMaxY) pcMaxY = p.y
+        if (p.z < pcMinZ) pcMinZ = p.z
+      }
+      let sMinX = Infinity, sMaxX = -Infinity, sMinY = Infinity, sMaxY = -Infinity, sMaxZ = -Infinity
+      for (const c of screenCorners) {
+        const p = c.clone().project(camera)
+        if (p.x < sMinX) sMinX = p.x
+        if (p.x > sMaxX) sMaxX = p.x
+        if (p.y < sMinY) sMinY = p.y
+        if (p.y > sMaxY) sMaxY = p.y
+        if (p.z < sMaxZ) sMaxZ = p.z
+      }
+      const overlap = !(pcMaxX < sMinX || pcMinX > sMaxX || pcMaxY < sMinY || pcMinY > sMaxY)
+      return overlap && pcMinZ < sMaxZ
+    }
+
     // Every move is an eased tween from where the camera is to the goal of the current view.
     const goal = new THREE.Vector3()
     const goalLook = new THREE.Vector3()
@@ -224,9 +265,11 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
         camera.lookAt(look)
       }
 
-      // The HTML screen always draws on top, so hide it when looking from behind the monitor.
+      // The HTML screen always draws on top, so hide it when looking from behind the monitor or when the PC case is in front of it.
       toCam.copy(camera.position).sub(SCREEN.center)
-      screenEl.style.visibility = toCam.z > 0.05 ? 'visible' : 'hidden'
+      const facingFront = toCam.z > 0.05
+      const occluded = isPcOccludingScreen()
+      screenEl.style.visibility = facingFront && !occluded ? 'visible' : 'hidden'
 
       life(t)
       gl.render(scene, camera)

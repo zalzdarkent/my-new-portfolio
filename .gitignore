@@ -24,6 +24,7 @@ lerna-debug.log*
 *.sln
 *.sw?
 *.png
+!public/**/*.png
 craft.json
 feed.json
 capture/
