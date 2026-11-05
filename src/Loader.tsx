@@ -80,7 +80,7 @@ export default function Loader({
         <div className="popup-wrap">
           <div className="popup">
             <div className="popup-text">
-              <p>{NAME} Portfolio Showcase 2022</p>
+              <p>{NAME} Portfolio Showcase</p>
               <p>
                 Click start to begin <span className="blink">_</span>
               </p>

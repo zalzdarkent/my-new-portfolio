@@ -25,7 +25,7 @@ export default function Hud({ show, onOverview }: { show: boolean; onOverview: (
   return (
     <div className={`hud${show ? '' : ' off'}`}>
       <p className="tag">Alif Fadillah Ummar</p>
-      <p className="tag">Software Engineer</p>
+      <p className="tag">Full Stack Developer</p>
       <div className="hud-row">
         <p className="tag">{now.toLocaleTimeString('en-US')}</p>
         <button className="tag icon-btn" onClick={handleToggleSound} aria-label={sound ? 'Mute' : 'Sound on'}>
