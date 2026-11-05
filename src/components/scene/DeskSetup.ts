@@ -62,17 +62,15 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
   monitorHitbox.add(glass)
   scene.add(monitorHitbox)
 
-  // Load Gaming PC Setup, Gaming Chair, Rhyzome Plant, and Document Folder in parallel before start screen finishes
+  // Load desk assets in parallel before start screen finishes
   const gltfLoader = new GLTFLoader()
-  let plantLeavesNode: THREE.Object3D | null = null
 
   Promise.all([
     gltfLoader.loadAsync('./gaming-pc/scene.gltf'),
     gltfLoader.loadAsync('./gaming_chair/scene.gltf'),
-    gltfLoader.loadAsync('./rhyzome_plant/scene.gltf'),
-    gltfLoader.loadAsync('./document_folder/scene.gltf'),
+    gltfLoader.loadAsync('./simple_retro_desk_lamp/scene.gltf'),
   ])
-    .then(([pcGltf, chairGltf, plantGltf, folderGltf]) => {
+    .then(([pcGltf, chairGltf, lampGltf]) => {
       const pcModel = pcGltf.scene
 
       pcModel.traverse((child) => {
@@ -105,7 +103,7 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
           }
           child.castShadow = true
           child.receiveShadow = true
-          child.frustumCulled = false
+          child.frustumCulled = true
         }
       })
 
@@ -127,7 +125,7 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
           }
           child.castShadow = true
           child.receiveShadow = true
-          child.frustumCulled = false
+          child.frustumCulled = true
         }
       })
 
@@ -138,11 +136,8 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
       chairModel.position.set(0.45, 0.58, 0.92)
       scene.add(chairModel)
 
-      const plantModel = plantGltf.scene
-      plantModel.traverse((child) => {
-        if (child.name === 'plant') {
-          plantLeavesNode = child
-        }
+      const lampModel = lampGltf.scene
+      lampModel.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           const mats = Array.isArray(child.material) ? child.material : [child.material]
           for (const m of mats) {
@@ -153,34 +148,21 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
           }
           child.castShadow = true
           child.receiveShadow = true
-          child.frustumCulled = false
+          child.frustumCulled = true
         }
       })
 
-      plantModel.scale.setScalar(0.62)
-      plantModel.position.set(1.26, 0, -0.32)
-      scene.add(plantModel)
+      const lampBounds = new THREE.Box3().setFromObject(lampModel)
+      const lampSize = lampBounds.getSize(new THREE.Vector3())
+      lampModel.scale.setScalar(0.52 / Math.max(lampSize.x, lampSize.y, lampSize.z))
+      lampModel.rotation.y = Math.PI
+      lampModel.position.set(-0.68, 0.765, 0.02)
+      scene.add(lampModel)
 
-      const folderModel = folderGltf.scene
-      folderModel.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          const mats = Array.isArray(child.material) ? child.material : [child.material]
-          for (const m of mats) {
-            if (m) {
-              m.transparent = false
-              m.depthWrite = true
-            }
-          }
-          child.castShadow = true
-          child.receiveShadow = true
-          child.frustumCulled = false
-        }
-      })
-
-      folderModel.scale.setScalar(0.098)
-      folderModel.rotation.y = 0.08
-      folderModel.position.set(-0.72, 0.7667, -0.12)
-      scene.add(folderModel)
+      const lampLight = new THREE.PointLight(0xffc98a, 0.7, 1.8, 2)
+      lampLight.position.set(-0.68, 1.12, 0.04)
+      lampLight.castShadow = true
+      scene.add(lampLight)
 
       onModelsReady()
     })
@@ -198,9 +180,9 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
   add(mug, new THREE.Mesh(new THREE.TorusGeometry(0.024, 0.007, 10, 20, Math.PI), mugMat), 0.04, 0.05, 0).rotation.z = -Math.PI / 2
   add(scene, mug, -0.54, 0.76, 0.22).rotation.y = 2.4
 
-  // Soft studio lighting
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xcfcac4, 1.6))
-  const key = new THREE.DirectionalLight(0xffffff, 2.5)
+  // Soft low-key lighting
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x111114, 0.42))
+  const key = new THREE.DirectionalLight(0xffffff, 0.8)
   key.position.set(0.6, 5, 2.0)
   key.castShadow = true
   key.shadow.mapSize.set(1024, 1024)
@@ -209,15 +191,10 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
   key.shadow.bias = -0.0005
   key.shadow.normalBias = 0.02
   scene.add(key)
-  const fill = new THREE.DirectionalLight(0xffffff, 0.8)
+  const fill = new THREE.DirectionalLight(0xffffff, 0.12)
   fill.position.set(-3, 2, 2)
   scene.add(fill)
 
-  const life = (t: number) => {
-    if (plantLeavesNode) {
-      plantLeavesNode.rotation.z = Math.sin(t * 0.9) * 0.015
-      plantLeavesNode.rotation.x = Math.cos(t * 0.7) * 0.012
-    }
-  }
+  const life = (_t: number) => {}
   return { monitor: monitorHitbox, life }
 }
