@@ -74,6 +74,66 @@ function startAmbientHum() {
   src.start()
 }
 
+// Quick terminal hacker blip / floppy seek pulse during boot screen log
+export function playBootBlip(high = false) {
+  const c = getCtx()
+  if (!c || !masterGain || muted) return
+  if (c.state === 'suspended') {
+    c.resume().catch(() => {})
+    if (c.state === 'suspended') return
+  }
+
+  const osc = c.createOscillator()
+  const gain = c.createGain()
+  const filter = c.createBiquadFilter()
+
+  osc.type = high ? 'sine' : 'square'
+  const freq = high ? 1800 + Math.random() * 400 : 700 + Math.random() * 200
+  osc.frequency.setValueAtTime(freq, c.currentTime)
+  osc.frequency.exponentialRampToValueAtTime(freq * 0.5, c.currentTime + 0.025)
+
+  filter.type = 'bandpass'
+  filter.frequency.value = 1200
+  filter.Q.value = 3
+
+  gain.gain.setValueAtTime(0.045, c.currentTime)
+  gain.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.03)
+
+  osc.connect(filter)
+  filter.connect(gain)
+  gain.connect(masterGain)
+
+  osc.start(c.currentTime)
+  osc.stop(c.currentTime + 0.035)
+}
+
+// Retro computer POST success beep (classic IBM / Award BIOS single beep)
+export function playBiosBeep() {
+  const c = getCtx()
+  if (!c || !masterGain || muted) return
+  if (c.state === 'suspended') {
+    c.resume().catch(() => {})
+    if (c.state === 'suspended') return
+  }
+
+  const osc = c.createOscillator()
+  const gain = c.createGain()
+
+  osc.type = 'square'
+  osc.frequency.setValueAtTime(987.77, c.currentTime) // B5 note
+
+  gain.gain.setValueAtTime(0, c.currentTime)
+  gain.gain.linearRampToValueAtTime(0.08, c.currentTime + 0.01)
+  gain.gain.setValueAtTime(0.08, c.currentTime + 0.12)
+  gain.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.18)
+
+  osc.connect(gain)
+  gain.connect(masterGain)
+
+  osc.start(c.currentTime)
+  osc.stop(c.currentTime + 0.2)
+}
+
 // Played when clicking START on the boot screen
 export function playStartupSound() {
   const c = getCtx()
