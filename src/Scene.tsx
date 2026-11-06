@@ -202,13 +202,13 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) return
       if ((e.target as HTMLElement | null)?.closest?.('.hud')) return
       const m = modeRef.current
-      if (m === 'overview') return setMode('desk')
+      ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera)
+      const hitSpiderMan = spiderManRef.current ? ray.intersectObject(spiderManRef.current, true).length > 0 : false
+      if (m === 'overview') return setMode(hitSpiderMan ? 'spiderman' : 'desk')
       if (m === 'screen' && (e.target as HTMLElement | null)?.closest?.('.os')) return
       if (m === 'phone' && (e.target as HTMLElement | null)?.closest?.('.phone-screen')) return
-      ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera)
       const hitMonitor = ray.intersectObject(monitor, true).length > 0
       const hitPhone = phoneMeshRef.current ? ray.intersectObject(phoneMeshRef.current, true).length > 0 : false
-      const hitSpiderMan = spiderManRef.current ? ray.intersectObject(spiderManRef.current, true).length > 0 : false
       if (m === 'desk' && hitSpiderMan) setMode('spiderman')
       else if (m === 'desk' && hitPhone) setMode('phone')
       else if (m === 'desk' && hitMonitor) setMode('screen')

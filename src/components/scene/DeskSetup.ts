@@ -272,39 +272,41 @@ export function buildDesk(
       })
       scene.add(pen)
 
-      const spiderMan = spiderManGltf.scene
-      const excludedParts: THREE.Object3D[] = []
-      spiderMan.traverse((child) => {
-        if (
-          child.name === 'Platform' ||
-          child.name === 'Spiderman_1' ||
-          child.name === 'Spiderman_3' ||
-          child.name === 'Web_1' ||
-          child.name === 'Web_2' ||
-          child.name === 'Text'
-        ) {
-          excludedParts.push(child)
-          return
-        }
+      const spiderMan = new THREE.Group()
+      const spiderManModel = spiderManGltf.scene
+      spiderManModel.updateMatrixWorld(true)
+      const character = spiderManModel.getObjectByName('Spiderman_3')
+      if (!character) throw new Error('Unable to find the Spider-Man character group')
+      const characterBounds = new THREE.Box3().setFromObject(character)
+      const characterSize = characterBounds.getSize(new THREE.Vector3())
+      spiderManModel.scale.setScalar(0.10 / characterSize.y)
+      spiderManModel.updateMatrixWorld(true)
+      const spiderManBounds = new THREE.Box3().setFromObject(spiderManModel)
+      const spiderManSize = spiderManBounds.getSize(new THREE.Vector3())
+      const spiderManCenter = spiderManBounds.getCenter(new THREE.Vector3())
+      spiderManModel.position.set(-spiderManCenter.x, -spiderManBounds.min.y, -spiderManCenter.z)
+      spiderManModel.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.castShadow = true
           child.receiveShadow = false
           child.frustumCulled = true
         }
       })
-      excludedParts.forEach((part) => part.removeFromParent())
-      spiderMan.updateMatrixWorld(true)
-      const spiderManBounds = new THREE.Box3().setFromObject(spiderMan)
-      const spiderManSize = spiderManBounds.getSize(new THREE.Vector3())
-      spiderMan.scale.setScalar(0.10 / spiderManSize.y)
-      spiderMan.updateMatrixWorld(true)
-      spiderManBounds.setFromObject(spiderMan)
-      const spiderManCenter = spiderManBounds.getCenter(new THREE.Vector3())
-      spiderMan.position.set(
-        0.5 - spiderManCenter.x,
-        0.76 - spiderManBounds.min.y,
-        0.24 - spiderManCenter.z,
+      spiderMan.add(spiderManModel)
+      const hitboxMaterial = new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0,
+        colorWrite: false,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      })
+      const hitbox = new THREE.Mesh(
+        new THREE.BoxGeometry(spiderManSize.x, spiderManSize.y, spiderManSize.z),
+        hitboxMaterial,
       )
+      hitbox.position.y = spiderManSize.y / 2
+      spiderMan.add(hitbox)
+      spiderMan.position.set(0.7, 0.76, 0.24)
       scene.add(spiderMan)
       scene.updateMatrixWorld(true)
       onSpiderManReady(spiderMan)
