@@ -250,12 +250,11 @@
 }
 .phone-screen-overlay {
   position: absolute;
-  z-index: 4;
+  z-index: 1;
   overflow: hidden;
   border-radius: 54px;
   background: #000;
   touch-action: manipulation;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
 }
 .phone-ui {
   --phone-ink: #f7f8ff;

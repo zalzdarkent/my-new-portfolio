@@ -79,8 +79,9 @@ export function buildDesk(
     gltfLoader.loadAsync('./notebook_blackwhite/scene.gltf'),
     gltfLoader.loadAsync('./faber_castell_ballpoint_pen/scene.gltf'),
     gltfLoader.loadAsync('./spiderman_no_way_home/scene.gltf'),
+    gltfLoader.loadAsync('./rog/scene.gltf'),
   ])
-    .then(([pcGltf, chairGltf, lampGltf, phoneHolderGltf, iphoneGltf, notebookGltf, penGltf, spiderManGltf]) => {
+    .then(([pcGltf, chairGltf, lampGltf, phoneHolderGltf, iphoneGltf, notebookGltf, penGltf, spiderManGltf, rogGltf]) => {
       const pcModel = pcGltf.scene
 
       pcModel.traverse((child) => {
@@ -122,6 +123,45 @@ export function buildDesk(
       pcModel.rotation.y = -Math.PI / 2
       pcModel.position.set(0.22, 0.7355, 0.18 - DESK_BACK_OFFSET)
       monitorHitbox.add(pcModel)
+
+      // Wrap ROG model in a centered group
+      const rogGroup = new THREE.Group()
+      const rogModel = rogGltf.scene
+      rogModel.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+          const mats = Array.isArray(child.material) ? child.material : [child.material]
+          for (const m of mats) {
+            if (m) {
+              m.transparent = false
+              m.depthWrite = true
+            }
+          }
+        }
+      })
+      const rogBounds = new THREE.Box3().setFromObject(rogModel)
+      const rogSize = rogBounds.getSize(new THREE.Vector3())
+      const rogCenter = rogBounds.getCenter(new THREE.Vector3())
+      
+      // Align model: center X & Y, and place back plane (min Z) exactly at local Z = 0
+      rogModel.position.set(-rogCenter.x, -rogCenter.y, -rogBounds.min.z)
+      rogGroup.add(rogModel)
+
+      // Panel dimensions: height ~0.295m, depth ~0.325m.
+      // Target logo size: ~0.16m wide
+      const targetSize = 0.16
+      const rogScale = targetSize / Math.max(rogSize.x, rogSize.y)
+      rogGroup.scale.setScalar(rogScale)
+
+      // Orient so logo faces +X (towards the right side of the desk)
+      // When looking at the panel from +X, +Z is to the left (front of PC), -Z is to the right (back of PC)
+      rogGroup.rotation.y = Math.PI / 2
+      // Outer surface of right side panel is at x = 0.6355.
+      // With min Z at local 0, local +Z extends outward into +X.
+      // Placing at x = 0.6365 puts both the emblem and text exactly 1mm flush against the panel.
+      rogGroup.position.set(0.6365, 0.9225, -0.0205)
+      scene.add(rogGroup)
 
       const chairModel = chairGltf.scene
       chairModel.traverse((child) => {
