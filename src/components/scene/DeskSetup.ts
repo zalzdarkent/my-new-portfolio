@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
-import { C, SCREEN } from '../../constants/sceneConstants'
+import { C, DESK_BACK_OFFSET, SCREEN } from '../../constants/sceneConstants'
 
 const std = (color: number, roughness = 0.65, metalness = 0) =>
   new THREE.MeshStandardMaterial({ color, roughness, metalness })
@@ -67,7 +67,7 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
 
   Promise.all([
     gltfLoader.loadAsync('./gaming-pc/scene.gltf'),
-    gltfLoader.loadAsync('./gaming_chair/scene.gltf'),
+    gltfLoader.loadAsync('./white_gaming_chair/scene.gltf'),
     gltfLoader.loadAsync('./simple_retro_desk_lamp/scene.gltf'),
   ])
     .then(([pcGltf, chairGltf, lampGltf]) => {
@@ -110,7 +110,7 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
       const S = 0.6
       pcModel.scale.setScalar(S)
       pcModel.rotation.y = -Math.PI / 2
-      pcModel.position.set(0.22, 0.7355, 0.18)
+      pcModel.position.set(0.22, 0.7355, 0.18 - DESK_BACK_OFFSET)
       monitorHitbox.add(pcModel)
 
       const chairModel = chairGltf.scene
@@ -129,11 +129,11 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
         }
       })
 
-      const chairScale = 0.034
+      const chairScale = 0.75
       chairModel.scale.setScalar(chairScale)
       // Rotated 90 degrees to the left (facing -X towards the left/desk)
       chairModel.rotation.y = -Math.PI / 2 - 0.2
-      chairModel.position.set(0.45, 0.58, 0.92)
+      chairModel.position.set(0.45, 0.02, 0.92)
       scene.add(chairModel)
 
       const lampModel = lampGltf.scene
@@ -156,11 +156,11 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
       const lampSize = lampBounds.getSize(new THREE.Vector3())
       lampModel.scale.setScalar(0.52 / Math.max(lampSize.x, lampSize.y, lampSize.z))
       lampModel.rotation.y = Math.PI
-      lampModel.position.set(-0.68, 0.765, 0.02)
+      lampModel.position.set(-0.68, 0.765, 0.02 - DESK_BACK_OFFSET)
       scene.add(lampModel)
 
       const lampLight = new THREE.PointLight(0xffc98a, 0.7, 1.8, 2)
-      lampLight.position.set(-0.68, 1.12, 0.04)
+      lampLight.position.set(-0.68, 1.12, 0.04 - DESK_BACK_OFFSET)
       lampLight.castShadow = true
       scene.add(lampLight)
 
@@ -178,7 +178,7 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
   add(mug, new THREE.Mesh(new THREE.CircleGeometry(0.036, 28), mugMat), 0, 0.002, 0).rotation.x = -Math.PI / 2
   add(mug, new THREE.Mesh(new THREE.CircleGeometry(0.038, 28), std(C.coffee, 0.2)), 0, 0.08, 0).rotation.x = -Math.PI / 2
   add(mug, new THREE.Mesh(new THREE.TorusGeometry(0.024, 0.007, 10, 20, Math.PI), mugMat), 0.04, 0.05, 0).rotation.z = -Math.PI / 2
-  add(scene, mug, -0.54, 0.76, 0.22).rotation.y = 2.4
+  add(scene, mug, -0.54, 0.76, 0.22 - DESK_BACK_OFFSET).rotation.y = 2.4
 
   // Soft low-key lighting
   scene.add(new THREE.HemisphereLight(0xffffff, 0x111114, 0.42))
