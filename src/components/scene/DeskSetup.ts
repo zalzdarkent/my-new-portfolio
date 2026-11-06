@@ -75,8 +75,10 @@ export function buildDesk(
     gltfLoader.loadAsync('./simple_retro_desk_lamp/scene.gltf'),
     gltfLoader.loadAsync('./phone_holder/scene.gltf'),
     gltfLoader.loadAsync('./iphone_16/scene.gltf'),
+    gltfLoader.loadAsync('./notebook_blackwhite/scene.gltf'),
+    gltfLoader.loadAsync('./faber_castell_ballpoint_pen/scene.gltf'),
   ])
-    .then(([pcGltf, chairGltf, lampGltf, phoneHolderGltf, iphoneGltf]) => {
+    .then(([pcGltf, chairGltf, lampGltf, phoneHolderGltf, iphoneGltf, notebookGltf, penGltf]) => {
       const pcModel = pcGltf.scene
 
       pcModel.traverse((child) => {
@@ -165,10 +167,27 @@ export function buildDesk(
       lampModel.position.set(-0.68, 0.765, 0.02 - DESK_BACK_OFFSET)
       scene.add(lampModel)
 
-      const lampLight = new THREE.PointLight(0xffc98a, 0.7, 1.8, 2)
+      const frontDeskLamp = lampGltf.scene.clone(true)
+      frontDeskLamp.scale.setScalar(0.52 / Math.max(lampSize.x, lampSize.y, lampSize.z))
+      frontDeskLamp.rotation.y = Math.PI / 2
+      frontDeskLamp.position.set(0.8, 0.765, 0.02 - DESK_BACK_OFFSET)
+      frontDeskLamp.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+          child.frustumCulled = true
+        }
+      })
+      scene.add(frontDeskLamp)
+
+      const lampLight = new THREE.PointLight(0xffc98a, 2.2, 2.2, 2)
       lampLight.position.set(-0.68, 1.12, 0.04 - DESK_BACK_OFFSET)
       lampLight.castShadow = true
       scene.add(lampLight)
+
+      const frontLampLight = new THREE.PointLight(0xffc98a, 1.8, 2.2, 2)
+      frontLampLight.position.set(0.8, 1.12, 0.2 - DESK_BACK_OFFSET)
+      scene.add(frontLampLight)
 
       const phoneHolder = phoneHolderGltf.scene
       phoneHolder.scale.setScalar(0.1)
@@ -214,6 +233,42 @@ export function buildDesk(
       scene.updateMatrixWorld(true)
       if (!phoneScreen) throw new Error('Unable to find the iPhone screen mesh (Object_18)')
       onPhoneScreenReady(phoneScreen)
+
+      const notebook = notebookGltf.scene
+      notebook.scale.setScalar(0.12)
+      notebook.updateMatrixWorld(true)
+      const notebookBounds = new THREE.Box3().setFromObject(notebook)
+      const notebookCenter = notebookBounds.getCenter(new THREE.Vector3())
+      const notebookSize = notebookBounds.getSize(new THREE.Vector3())
+      notebook.position.set(-0.75 - notebookCenter.x, 0.76 - notebookBounds.min.y, 0.24 - notebookCenter.z)
+      notebook.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+          child.frustumCulled = true
+        }
+      })
+      scene.add(notebook)
+
+      const pen = penGltf.scene
+      pen.scale.setScalar(0.019)
+      pen.updateMatrixWorld(true)
+      const penBounds = new THREE.Box3().setFromObject(pen)
+      const penCenter = penBounds.getCenter(new THREE.Vector3())
+      const penSize = penBounds.getSize(new THREE.Vector3())
+      pen.position.set(
+        -0.75 + notebookSize.x / 2 + penSize.x / 2 + 0.02 - penCenter.x,
+        0.76 - penBounds.min.y,
+        0.24 - penCenter.z,
+      )
+      pen.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+          child.frustumCulled = true
+        }
+      })
+      scene.add(pen)
 
       onModelsReady()
     })

@@ -1,0 +1,11 @@
+Model Information:
+* title:	Faber Castell Ballpoint Pen
+* source:	https://sketchfab.com/3d-models/faber-castell-ballpoint-pen-ca69fdd81e634048b77932b4851115bc
+* author:	chemicalX (https://sketchfab.com/chemicalX3D)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Faber Castell Ballpoint Pen" (https://sketchfab.com/3d-models/faber-castell-ballpoint-pen-ca69fdd81e634048b77932b4851115bc) by chemicalX (https://sketchfab.com/chemicalX3D) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -8,7 +8,7 @@ import Showcase from './components/desktop/Showcase'
 import Hud from './Hud'
 import { buildDesk } from './components/scene/DeskSetup'
 import { INTRO, SCREEN, VIEWS } from './constants/sceneConstants'
-import { playKeyClick, playMouseDown, playMouseUp } from './sound'
+import { playKeyClick, playMouseDown, playMouseUp, playViewTransition } from './sound'
 
 export type Mode = 'overview' | 'desk' | 'screen' | 'phone'
 const BEGIN_TEXT = 'Click anywhere to begin '
@@ -245,6 +245,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
 
       if (modeRef.current !== current) {
         current = modeRef.current
+        playViewTransition()
         controls.enabled = false
         from.copy(camera.position)
         fromLook.copy(look)

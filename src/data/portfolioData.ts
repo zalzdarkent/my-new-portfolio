@@ -319,12 +319,12 @@ export const TESTIMONIALS_DATA: TestimonialItem[] = [
   {
     name: 'Gilbert Gamas',
     role: 'Junior Fullstack Developer',
-    text: 'Fadal adalah partner yang sangat baik untuk diajak bekerja sama. Kami mengerjakan banyak proyek bersama selama kuliah. Dedikasi dan skill coding-nya luar biasa, selalu memberikan hasil yang bersih dan fungsional.',
+    text: 'Alif adalah partner yang sangat baik untuk diajak bekerja sama. Kami mengerjakan banyak proyek bersama selama kuliah. Dedikasi dan skill coding-nya luar biasa, selalu memberikan hasil yang bersih dan fungsional.',
   },
   {
     name: 'Annisa Dewi',
     role: 'Koordinator Asisten Lab',
-    text: 'Bekerja dengan Fadil pada sistem lab sangat menyenangkan. Dia punya pemahaman yang kuat tentang arsitektur sistem dan selalu menemukan solusi efisien untuk masalah yang kompleks.',
+    text: 'Bekerja dengan Alif pada sistem lab sangat menyenangkan. Dia punya pemahaman yang kuat tentang arsitektur sistem dan selalu menemukan solusi efisien untuk masalah yang kompleks.',
   },
   {
     name: 'Rizky Pratama',

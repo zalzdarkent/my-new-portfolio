@@ -1,8 +1,7 @@
-// Web Audio API Sound Engine: startup chime, ambient PC hum, mechanical typing, and mouse clicks.
+// Web Audio API Sound Engine: startup chime, mechanical typing, and mouse clicks.
 
 let ctx: AudioContext | null = null
 let masterGain: GainNode | null = null
-let humGain: GainNode | null = null
 let muted = false
 const listeners = new Set<(soundOn: boolean) => void>()
 
@@ -37,41 +36,8 @@ export function toggleSound(): boolean {
   if (masterGain && c) {
     masterGain.gain.setTargetAtTime(muted ? 0 : 1, c.currentTime, 0.03)
   }
-  if (!muted && !humGain) {
-    startAmbientHum()
-  }
   listeners.forEach((fn) => fn(!muted))
   return !muted
-}
-
-function startAmbientHum() {
-  const c = getCtx()
-  if (!c || !masterGain || humGain) return
-
-  // Soft filtered noise for subtle PC cooling fan / studio ambience
-  const buf = c.createBuffer(1, c.sampleRate * 2, c.sampleRate)
-  const data = buf.getChannelData(0)
-  let last = 0
-  for (let i = 0; i < data.length; i++) {
-    last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02
-    data[i] = last
-  }
-  const src = c.createBufferSource()
-  src.buffer = buf
-  src.loop = true
-
-  const lp = c.createBiquadFilter()
-  lp.type = 'lowpass'
-  lp.frequency.value = 420
-
-  humGain = c.createGain()
-  humGain.gain.setValueAtTime(0.01, c.currentTime)
-  humGain.gain.exponentialRampToValueAtTime(0.28, c.currentTime + 1.2)
-
-  src.connect(lp)
-  lp.connect(humGain)
-  humGain.connect(masterGain)
-  src.start()
 }
 
 // Quick terminal hacker blip / floppy seek pulse during boot screen log
@@ -143,7 +109,6 @@ export function playStartupSound() {
   masterGain.gain.setValueAtTime(1, c.currentTime)
   listeners.forEach((fn) => fn(true))
 
-  startAmbientHum()
   playMouseDown()
 
   // Warm modern Ubuntu-inspired startup chord / arpeggio
@@ -175,6 +140,47 @@ export function playStartupSound() {
     osc.stop(t + 1.65)
     sub.stop(t + 1.65)
   })
+}
+
+export function playViewTransition() {
+  const c = getCtx()
+  if (!c || !masterGain || muted) return
+
+  const now = c.currentTime
+  const osc = c.createOscillator()
+  const bodyOsc = c.createOscillator()
+  const filter = c.createBiquadFilter()
+  const gain = c.createGain()
+  const bodyGain = c.createGain()
+
+  osc.type = 'triangle'
+  osc.frequency.setValueAtTime(520, now)
+  osc.frequency.exponentialRampToValueAtTime(220, now + 0.26)
+
+  filter.type = 'lowpass'
+  filter.frequency.setValueAtTime(1800, now)
+  filter.frequency.exponentialRampToValueAtTime(650, now + 0.26)
+
+  gain.gain.setValueAtTime(0.0001, now)
+  gain.gain.linearRampToValueAtTime(0.12, now + 0.035)
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3)
+
+  bodyOsc.type = 'sine'
+  bodyOsc.frequency.setValueAtTime(160, now)
+  bodyOsc.frequency.exponentialRampToValueAtTime(90, now + 0.26)
+  bodyGain.gain.setValueAtTime(0.0001, now)
+  bodyGain.gain.linearRampToValueAtTime(0.08, now + 0.025)
+  bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3)
+
+  osc.connect(filter)
+  filter.connect(gain)
+  gain.connect(masterGain)
+  bodyOsc.connect(bodyGain)
+  bodyGain.connect(masterGain)
+  osc.start(now)
+  bodyOsc.start(now)
+  osc.stop(now + 0.31)
+  bodyOsc.stop(now + 0.31)
 }
 
 // Realistic mechanical keyboard keystroke sound (tactile click + keycap thock)
@@ -295,4 +301,3 @@ export function playMouseUp() {
   osc.start(now)
   osc.stop(now + 0.009)
 }
-
