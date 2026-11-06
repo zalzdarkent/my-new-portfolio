@@ -1,0 +1,11 @@
+Model Information:
+* title:	ROG
+* source:	https://sketchfab.com/3d-models/rog-9a1d069f3869468e89ba2cbc65761bee
+* author:	umkhero (https://sketchfab.com/umkhero)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "ROG" (https://sketchfab.com/3d-models/rog-9a1d069f3869468e89ba2cbc65761bee) by umkhero (https://sketchfab.com/umkhero) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

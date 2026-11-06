@@ -184,7 +184,9 @@ export function buildDesk(
 
       const lampLight = new THREE.PointLight(0xffc98a, 2.2, 2.2, 2)
       lampLight.position.set(-0.68, 1.12, 0.04 - DESK_BACK_OFFSET)
-      lampLight.castShadow = true
+      // PointLight shadows require 6 cubemap passes every frame across 800+ meshes.
+      // Disabling castShadow on accent point lights drastically improves 360 rotation FPS.
+      lampLight.castShadow = false
       scene.add(lampLight)
 
       const frontLampLight = new THREE.PointLight(0xffc98a, 1.8, 2.2, 2)
@@ -201,7 +203,7 @@ export function buildDesk(
       phoneHolder.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.castShadow = true
-          child.receiveShadow = true
+          child.receiveShadow = false
           child.frustumCulled = true
         }
       })
@@ -259,9 +261,14 @@ export function buildDesk(
       const penCenter = penBounds.getCenter(new THREE.Vector3())
       const penSize = penBounds.getSize(new THREE.Vector3())
       pen.position.set(
-        -0.75 + notebookSize.x / 2 + penSize.x / 2 + 0.02 - penCenter.x,
+        -0.84 + notebookSize.x / 2 + penSize.x / 2 + 0.02 - penCenter.x,
         0.76 - penBounds.min.y,
         0.24 - penCenter.z,
+      )
+      pen.rotation.set(
+        THREE.MathUtils.degToRad(0),  // X
+        THREE.MathUtils.degToRad(70), // Y
+        THREE.MathUtils.degToRad(0),
       )
       pen.traverse((child) => {
         if (child instanceof THREE.Mesh) {
@@ -342,6 +349,6 @@ export function buildDesk(
   fill.position.set(-3, 2, 2)
   scene.add(fill)
 
-  const life = (_t: number) => {}
+  const life = (_t: number) => { }
   return { monitor: monitorHitbox, life }
 }

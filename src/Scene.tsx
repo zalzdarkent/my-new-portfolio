@@ -4,7 +4,7 @@ import * as THREE from 'three'
 import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import Desktop, { SCREEN_W, SCREEN_H } from './Desktop'
-import Showcase from './components/desktop/Showcase'
+import PhoneExperience, { type PhonePage } from './components/desktop/PhoneExperience'
 import Hud from './Hud'
 import { buildDesk } from './components/scene/DeskSetup'
 import { INTRO, SCREEN, VIEWS } from './constants/sceneConstants'
@@ -34,7 +34,18 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     el.style.pointerEvents = 'auto'
     return el
   }, [])
+  const phoneOverlayEl = useMemo(() => {
+    const el = document.createElement('div')
+    el.className = 'phone-screen-overlay'
+    el.style.width = `${PHONE_SCREEN_W}px`
+    el.style.height = `${PHONE_SCREEN_H}px`
+    el.style.display = 'none'
+    el.style.pointerEvents = 'none'
+    el.style.transformOrigin = 'top left'
+    return el
+  }, [])
   const [mode, setMode] = useState<Mode>('overview')
+  const [phonePage, setPhonePage] = useState<PhonePage>('lock')
   const [typedBegin, setTypedBegin] = useState('')
   const modeRef = useRef<Mode>('overview')
   modeRef.current = mode
@@ -74,6 +85,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
 
   useEffect(() => {
     const root = host.current!
+    root.appendChild(phoneOverlayEl)
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.02, 60)
     camera.position.copy(INTRO)
@@ -98,6 +110,9 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     gl.setPixelRatio(Math.min(devicePixelRatio, 1.25))
     gl.shadowMap.enabled = true
     gl.shadowMap.type = THREE.PCFSoftShadowMap
+    // Static shadow map caching: render once and freeze, eliminating thousands of redundant shadow passes per frame
+    gl.shadowMap.autoUpdate = false
+    gl.shadowMap.needsUpdate = true
     gl.toneMapping = THREE.NeutralToneMapping
     gl.domElement.style.position = 'absolute'
     gl.domElement.style.inset = '0'
@@ -109,11 +124,19 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     const phoneCenter = new THREE.Vector3()
     const phoneNormal = new THREE.Vector3(0, 0, 1)
     const phoneSize = new THREE.Vector2()
+    const phoneWorldQuaternion = new THREE.Quaternion()
+    const phoneCorners = [
+      new THREE.Vector3(),
+      new THREE.Vector3(),
+      new THREE.Vector3(),
+      new THREE.Vector3(),
+    ]
     const spiderManCenter = new THREE.Vector3()
     const spiderManNormal = new THREE.Vector3(0, 0, 1)
     const spiderManSize = new THREE.Vector2()
     const { monitor, life } = buildDesk(scene, () => {
-      // Pre-compile shaders and render a warm-up frame to upload all textures to GPU before user clicks START
+      // Pre-compile shaders, render static shadow map once, and warm up GPU before user clicks START
+      gl.shadowMap.needsUpdate = true
       gl.compile(scene, camera)
       gl.render(scene, camera)
       css.render(cssScene, camera)
@@ -128,6 +151,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       const worldQuaternion = new THREE.Quaternion()
       const worldScale = new THREE.Vector3()
       phoneMesh.matrixWorld.decompose(new THREE.Vector3(), worldQuaternion, worldScale)
+      phoneWorldQuaternion.copy(worldQuaternion)
       phoneCenter.copy(localCenter).applyMatrix4(phoneMesh.matrixWorld)
       phoneNormal.set(0, 0, 1).applyQuaternion(worldQuaternion).normalize()
       phoneSize.set(localSize.x * worldScale.x, localSize.y * worldScale.y)
@@ -149,9 +173,9 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     Object.assign(controls, {
       enabled: false,
       enableDamping: true,
-      dampingFactor: 0.08,
+      dampingFactor: 0.12,
       enablePan: false,
-      rotateSpeed: 0.6,
+      rotateSpeed: 0.85,
       minDistance: 2.4,
       maxDistance: 9,
       minPolarAngle: 0.35,
@@ -206,7 +230,12 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       const hitSpiderMan = spiderManRef.current ? ray.intersectObject(spiderManRef.current, true).length > 0 : false
       if (m === 'overview') return setMode(hitSpiderMan ? 'spiderman' : 'desk')
       if (m === 'screen' && (e.target as HTMLElement | null)?.closest?.('.os')) return
-      if (m === 'phone' && (e.target as HTMLElement | null)?.closest?.('.phone-screen')) return
+      if (
+        m === 'phone' &&
+        (e.target as HTMLElement | null)?.closest?.('.phone-screen, .phone-screen-overlay')
+      ) {
+        return
+      }
       const hitMonitor = ray.intersectObject(monitor, true).length > 0
       const hitPhone = phoneMeshRef.current ? ray.intersectObject(phoneMeshRef.current, true).length > 0 : false
       if (m === 'desk' && hitSpiderMan) setMode('spiderman')
@@ -299,11 +328,15 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
         camera.lookAt(look)
       }
 
-      // The WebGL canvas sits on top of CSS3D and punches a depth-tested transparent hole at the screen.
-      // Only let pointer events pass through to the CSS3D Ubuntu screen when zoomed into 'screen' mode.
+      // Allow pointer events to pass through to CSS3D when zoomed into 'screen' or 'phone' mode.
       gl.domElement.style.pointerEvents = current === 'screen' || current === 'phone' ? 'none' : 'auto'
       toCam.copy(camera.position).sub(SCREEN.center)
       screenEl.style.visibility = toCam.dot(screenNormal) > 0.02 ? 'visible' : 'hidden'
+      
+      const toCamPhone = new THREE.Vector3().copy(camera.position).sub(phoneCenter)
+      phoneScreenObj.visible = toCamPhone.dot(phoneNormal) > 0.02
+      phoneOverlayEl.style.display = 'none'
+      phoneOverlayEl.style.pointerEvents = 'none'
 
       life(t)
       gl.render(scene, camera)
@@ -321,11 +354,12 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       controls.dispose()
       phoneMeshRef.current = null
       spiderManRef.current = null
+      phoneOverlayEl.remove()
       gl.dispose()
       gl.domElement.remove()
       css.domElement.remove()
     }
-  }, [screenEl, phoneScreenEl])
+  }, [screenEl, phoneScreenEl, phoneOverlayEl])
 
   return (
     <div className="scene" ref={host}>
@@ -333,7 +367,8 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
         <Desktop zoomed={mode === 'screen'} onEnter={() => setMode(mode === 'overview' ? 'desk' : 'screen')} />,
         screenEl,
       )}
-      {createPortal(<Showcase mobile />, phoneScreenEl)}
+      {createPortal(<PhoneExperience page={phonePage} onPageChange={setPhonePage} />, phoneScreenEl)}
+      {createPortal(<PhoneExperience page={phonePage} onPageChange={setPhonePage} />, phoneOverlayEl)}
       <p className={`begin${started && mode === 'overview' ? '' : ' off'}`}>
         {typedBegin}
         <span className="blink">_</span>
