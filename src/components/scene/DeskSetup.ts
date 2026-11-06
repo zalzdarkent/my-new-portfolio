@@ -23,7 +23,11 @@ export interface DeskSetup {
   life: (t: number) => void
 }
 
-export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSetup {
+export function buildDesk(
+  scene: THREE.Scene,
+  onModelsReady: () => void,
+  onPhoneScreenReady: (screen: THREE.Mesh) => void,
+): DeskSetup {
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.13 }))
   floor.rotation.x = -Math.PI / 2
   floor.receiveShadow = true
@@ -193,6 +197,7 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
         0.762 + holderSize.y * 0.36 - iphoneBounds.min.y,
         0.077 - iphoneCenter.z,
       )
+      let phoneScreen: THREE.Mesh | null = null
       iphone.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.castShadow = true
@@ -200,15 +205,15 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
           child.frustumCulled = true
           // Object_18 is the iPhone's front glass in this GLTF.
           if (child.name === 'Object_18') {
-            child.material = new THREE.MeshBasicMaterial({
-              color: 0xffffff,
-              side: THREE.DoubleSide,
-              toneMapped: false,
-            })
+            child.material = holeMat
+            phoneScreen = child
           }
         }
       })
       scene.add(iphone)
+      scene.updateMatrixWorld(true)
+      if (!phoneScreen) throw new Error('Unable to find the iPhone screen mesh (Object_18)')
+      onPhoneScreenReady(phoneScreen)
 
       onModelsReady()
     })

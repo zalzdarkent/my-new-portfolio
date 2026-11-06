@@ -4,13 +4,16 @@ import * as THREE from 'three'
 import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import Desktop, { SCREEN_W, SCREEN_H } from './Desktop'
+import Showcase from './components/desktop/Showcase'
 import Hud from './Hud'
 import { buildDesk } from './components/scene/DeskSetup'
 import { INTRO, SCREEN, VIEWS } from './constants/sceneConstants'
 import { playKeyClick, playMouseDown, playMouseUp } from './sound'
 
-export type Mode = 'overview' | 'desk' | 'screen'
+export type Mode = 'overview' | 'desk' | 'screen' | 'phone'
 const BEGIN_TEXT = 'Click anywhere to begin '
+const PHONE_SCREEN_W = 390
+const PHONE_SCREEN_H = 844
 
 const easeInOut = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2)
 
@@ -20,6 +23,14 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     const el = document.createElement('div')
     el.style.width = `${SCREEN_W}px`
     el.style.height = `${SCREEN_H}px`
+    el.style.pointerEvents = 'auto'
+    return el
+  }, [])
+  const phoneScreenEl = useMemo(() => {
+    const el = document.createElement('div')
+    el.className = 'phone-screen'
+    el.style.width = `${PHONE_SCREEN_W}px`
+    el.style.height = `${PHONE_SCREEN_H}px`
     el.style.pointerEvents = 'auto'
     return el
   }, [])
@@ -78,6 +89,9 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     // Non-uniform scale so the 1280x720 desktop fills the exact 0.597 x 0.3268 bezel opening
     screenObj.scale.set(SCREEN.w / SCREEN_W, SCREEN.h / SCREEN_H, 1)
     cssScene.add(screenObj)
+    const phoneScreenObj = new CSS3DObject(phoneScreenEl)
+    phoneScreenObj.visible = false
+    cssScene.add(phoneScreenObj)
 
     const gl = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' })
     gl.setClearColor(0x070709, 1)
@@ -90,12 +104,34 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     gl.domElement.style.zIndex = '1'
     root.appendChild(gl.domElement)
 
+    const phoneMeshRef: { current: THREE.Mesh | null } = { current: null }
+    const phoneCenter = new THREE.Vector3()
+    const phoneNormal = new THREE.Vector3(0, 0, 1)
+    const phoneSize = new THREE.Vector2()
     const { monitor, life } = buildDesk(scene, () => {
       // Pre-compile shaders and render a warm-up frame to upload all textures to GPU before user clicks START
       gl.compile(scene, camera)
       gl.render(scene, camera)
       css.render(cssScene, camera)
       onLoadedRef.current?.()
+    }, (phoneMesh) => {
+      phoneMeshRef.current = phoneMesh
+      phoneMesh.geometry.computeBoundingBox()
+      const bounds = phoneMesh.geometry.boundingBox
+      if (!bounds) throw new Error('Unable to calculate the iPhone screen bounds')
+      const localSize = bounds.getSize(new THREE.Vector3())
+      const localCenter = bounds.getCenter(new THREE.Vector3())
+      const worldQuaternion = new THREE.Quaternion()
+      const worldScale = new THREE.Vector3()
+      phoneMesh.matrixWorld.decompose(new THREE.Vector3(), worldQuaternion, worldScale)
+      phoneCenter.copy(localCenter).applyMatrix4(phoneMesh.matrixWorld)
+      phoneNormal.set(0, 0, 1).applyQuaternion(worldQuaternion).normalize()
+      phoneSize.set(localSize.x * worldScale.x, localSize.y * worldScale.y)
+
+      phoneScreenObj.position.copy(phoneCenter).addScaledVector(phoneNormal, 0.0005)
+      phoneScreenObj.quaternion.copy(worldQuaternion)
+      phoneScreenObj.scale.set(phoneSize.x / PHONE_SCREEN_W * 1.02, phoneSize.y / PHONE_SCREEN_H * 1.02, 1)
+      phoneScreenObj.visible = true
     })
 
     // Drag to turn around the desk in the overview (360 degrees full rotation)
@@ -126,13 +162,17 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     // Pull the camera back on narrow (portrait) screens so the desk still fits.
     const viewPos = (v: (typeof VIEWS)['desk'], out: THREE.Vector3) =>
       out.copy(v.pos).sub(v.look).multiplyScalar(Math.max(1, v.fit / camera.aspect)).add(v.look)
-    const zoomPos = (out: THREE.Vector3) => {
+    const zoomPos = (
+      center: THREE.Vector3,
+      normal: THREE.Vector3,
+      width: number,
+      height: number,
+      out: THREE.Vector3,
+      fit = 1.08,
+    ) => {
       const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))
-      const d = Math.max(SCREEN.h / 2 / t, SCREEN.w / 2 / (t * camera.aspect)) * 1.05
-      // Position camera along the monitor's tilted normal so the screen is a flat rectangle
-      const ny = -Math.sin(SCREEN.rotX) * d
-      const nz = Math.cos(SCREEN.rotX) * d
-      return out.copy(SCREEN.center).add(new THREE.Vector3(0, ny, nz))
+      const d = Math.max(height / 2 / t, width / 2 / (t * camera.aspect)) * fit
+      return out.copy(center).addScaledVector(normal, d)
     }
 
     const pointer = new THREE.Vector2()
@@ -154,14 +194,19 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       const m = modeRef.current
       if (m === 'overview') return setMode('desk')
       if (m === 'screen' && (e.target as HTMLElement | null)?.closest?.('.os')) return
+      if (m === 'phone' && (e.target as HTMLElement | null)?.closest?.('.phone-screen')) return
       ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera)
-      const hit = ray.intersectObject(monitor, true).length > 0
-      if (m === 'desk' && hit) setMode('screen')
-      if (m === 'screen' && !hit) setMode('desk')
+      const hitMonitor = ray.intersectObject(monitor, true).length > 0
+      const hitPhone = phoneMeshRef.current ? ray.intersectObject(phoneMeshRef.current, true).length > 0 : false
+      if (m === 'desk' && hitPhone) setMode('phone')
+      else if (m === 'desk' && hitMonitor) setMode('screen')
+      if (m === 'screen' && !hitMonitor) setMode('desk')
+      if (m === 'phone' && !hitPhone) setMode('desk')
     }
     root.addEventListener('pointerdown', onDown)
     root.addEventListener('pointerup', onUp)
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && modeRef.current === 'screen' && setMode('desk')
+    const onKey = (e: KeyboardEvent) =>
+      e.key === 'Escape' && (modeRef.current === 'screen' || modeRef.current === 'phone') && setMode('desk')
     addEventListener('keydown', onKey)
 
     const screenNormal = new THREE.Vector3(0, -Math.sin(SCREEN.rotX), Math.cos(SCREEN.rotX))
@@ -218,8 +263,11 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
         look.copy(controls.target)
       } else {
         if (current === 'screen') {
-          zoomPos(goal)
+          zoomPos(SCREEN.center, screenNormal, SCREEN.w, SCREEN.h, goal)
           goalLook.copy(SCREEN.center)
+        } else if (current === 'phone') {
+          zoomPos(phoneCenter, phoneNormal, phoneSize.x, phoneSize.y, goal, 1.18)
+          goalLook.copy(phoneCenter)
         } else if (current === 'desk') {
           viewPos(VIEWS.desk, goal).add(new THREE.Vector3(smooth.x * 0.08, smooth.y * 0.04, 0))
           goalLook.copy(VIEWS.desk.look)
@@ -234,7 +282,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
 
       // The WebGL canvas sits on top of CSS3D and punches a depth-tested transparent hole at the screen.
       // Only let pointer events pass through to the CSS3D Ubuntu screen when zoomed into 'screen' mode.
-      gl.domElement.style.pointerEvents = current === 'screen' ? 'none' : 'auto'
+      gl.domElement.style.pointerEvents = current === 'screen' || current === 'phone' ? 'none' : 'auto'
       toCam.copy(camera.position).sub(SCREEN.center)
       screenEl.style.visibility = toCam.dot(screenNormal) > 0.02 ? 'visible' : 'hidden'
 
@@ -252,11 +300,12 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       root.removeEventListener('pointerdown', onDown)
       root.removeEventListener('pointerup', onUp)
       controls.dispose()
+      phoneMeshRef.current = null
       gl.dispose()
       gl.domElement.remove()
       css.domElement.remove()
     }
-  }, [screenEl])
+  }, [screenEl, phoneScreenEl])
 
   return (
     <div className="scene" ref={host}>
@@ -264,6 +313,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
         <Desktop zoomed={mode === 'screen'} onEnter={() => setMode(mode === 'overview' ? 'desk' : 'screen')} />,
         screenEl,
       )}
+      {createPortal(<Showcase mobile />, phoneScreenEl)}
       <p className={`begin${started && mode === 'overview' ? '' : ' off'}`}>
         {typedBegin}
         <span className="blink">_</span>

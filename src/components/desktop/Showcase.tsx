@@ -5,7 +5,7 @@ import type { Lang, Page } from "../../types/portfolio"
 import { NAV_KEYS } from "../../types/portfolio"
 import ContactForm from "./ContactForm"
 
-export default function Showcase() {
+export default function Showcase({ mobile = false }: { mobile?: boolean } = {}) {
   const [page, setPage] = useState<Page>('Home')
   const [lang, setLang] = useState<Lang>('id')
   const [projFilter, setProjFilter] = useState<'all' | 'fullstack' | 'ai' | 'iot'>('all')
@@ -416,7 +416,7 @@ export default function Showcase() {
 
   if (page === 'Home')
     return (
-      <div className="showcase home" onPointerDown={(e) => e.stopPropagation()}>
+      <div className={`showcase home${mobile ? ' phone' : ''}`} onPointerDown={(e) => e.stopPropagation()}>
         <div className="home-pill">
           <span className="status-dot" />
           <span>{t.status}</span>
@@ -453,7 +453,7 @@ export default function Showcase() {
     )
 
   return (
-    <div className="showcase" onPointerDown={(e) => e.stopPropagation()}>
+    <div className={`showcase${mobile ? ' phone' : ''}`} onPointerDown={(e) => e.stopPropagation()}>
       <aside>
         <button className="mini-name" onClick={() => setPage('Home')}>
           {NAME}

@@ -241,6 +241,135 @@
 }
 
 /* Showcase Modern UI */
+.phone-screen {
+  overflow: hidden;
+  border-radius: 30px;
+  background: #111;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+.phone-screen .showcase.phone {
+  width: 100%;
+  height: 100%;
+  font-size: 13px;
+  letter-spacing: 0;
+  touch-action: pan-y;
+}
+.phone-screen .showcase.phone.home {
+  justify-content: flex-start;
+  padding: 48px 24px 24px;
+  overflow-y: auto;
+}
+.phone-screen .showcase.phone.home .name {
+  font-size: 30px;
+}
+.phone-screen .showcase.phone.home .role {
+  font-size: 14px;
+}
+.phone-screen .showcase.phone .home-bio {
+  font-size: 12px;
+  margin-bottom: 18px;
+}
+.phone-screen .showcase.phone .home-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.phone-screen .showcase.phone .home-nav button {
+  padding: 10px 6px;
+  font-size: 12px;
+}
+.phone-screen .showcase.phone .home-quick-info {
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+}
+.phone-screen .showcase.phone .home-quick-info > span {
+  display: none;
+}
+.phone-screen .showcase.phone:not(.home) {
+  flex-direction: column;
+}
+.phone-screen .showcase.phone aside {
+  width: 100%;
+  max-height: 180px;
+  flex: 0 0 auto;
+  padding: 12px;
+  overflow: hidden;
+  box-shadow: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.phone-screen .showcase.phone .mini-name {
+  font-size: 14px;
+}
+.phone-screen .showcase.phone .mini-role {
+  margin-bottom: 7px;
+}
+.phone-screen .showcase.phone .aside-status {
+  margin-bottom: 7px;
+}
+.phone-screen .showcase.phone .links {
+  flex-direction: row;
+  gap: 3px;
+  overflow-x: auto;
+}
+.phone-screen .showcase.phone .links button {
+  flex: 0 0 auto;
+  padding: 6px 8px;
+  font-size: 11px;
+}
+.phone-screen .showcase.phone .aside-footer {
+  margin: 6px 0 0;
+  padding: 0;
+  border: 0;
+}
+.phone-screen .showcase.phone .lang-toggle {
+  width: 92px;
+  margin-left: auto;
+  padding: 2px;
+}
+.phone-screen .showcase.phone .aside-socials {
+  display: none;
+}
+.phone-screen .showcase.phone .page {
+  width: 100%;
+  min-width: 0;
+  padding: 16px;
+}
+.phone-screen .showcase.phone .page h2 {
+  font-size: 20px;
+}
+.phone-screen .showcase.phone .page h3 {
+  font-size: 13px;
+}
+.phone-screen .showcase.phone .page p {
+  font-size: 12px;
+}
+.phone-screen .showcase.phone .stats-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.phone-screen .showcase.phone .habits-grid,
+.phone-screen .showcase.phone .testimonials-grid,
+.phone-screen .showcase.phone .skills-grid,
+.phone-screen .showcase.phone .competencies-grid,
+.phone-screen .showcase.phone .achieve-grid,
+.phone-screen .showcase.phone .projects-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+.phone-screen .showcase.phone .project-filters {
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.phone-screen .showcase.phone .contact-layout {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
 .showcase {
   height: 100%;
   display: flex;
