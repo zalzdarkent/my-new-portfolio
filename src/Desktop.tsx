@@ -12,8 +12,75 @@ export const SCREEN_H = 720
 const APPS: Record<AppId, { title: string; icon: IconKind; w: number; h: number }> = {
   showcase: { title: 'Showcase - Alif Fadillah Ummar', icon: 'terminal', w: 960, h: 600 },
   notes: { title: 'Text Editor - readme.txt', icon: 'note', w: 520, h: 400 },
-  credits: { title: 'Credits', icon: 'folder', w: 420, h: 300 },
+  credits: { title: 'Credits', icon: 'folder', w: 640, h: 610 },
 }
+
+const ASSET_CREDITS = [
+  {
+    title: 'Gaming-pc',
+    url: 'https://sketchfab.com/3d-models/gaming-pc-364175250e8847998d0135c357d8b60d',
+    author: 'ws12x1',
+    authorUrl: 'https://sketchfab.com/ws12x1',
+    license: 'CC BY 4.0',
+    modified: false,
+  },
+  {
+    title: 'Gaming Chair',
+    url: 'https://sketchfab.com/3d-models/gaming-chair-7c276ea3a3a24bda893f0dd70d53d141',
+    author: 'Pradeep.Kumar2',
+    authorUrl: 'https://sketchfab.com/Pradeep.Kumar2',
+    license: 'CC BY 4.0',
+    modified: true,
+  },
+  {
+    title: 'simple retro Desk Lamp',
+    url: 'https://sketchfab.com/3d-models/simple-retro-desk-lamp-9818614b5da1479ba43a6a1216b1688f',
+    author: 'ribot02',
+    authorUrl: 'https://sketchfab.com/ribot02',
+    license: 'CC BY 4.0',
+    modified: true,
+  },
+  {
+    title: 'Phone Holder',
+    url: 'https://sketchfab.com/3d-models/phone-holder-c7f862eb830b439ebf5852f67d843907',
+    author: 'cettina.savatti',
+    authorUrl: 'https://sketchfab.com/cettina.savatti',
+    license: 'CC BY 4.0',
+    modified: true,
+  },
+  {
+    title: 'iPhone 16 - Free',
+    url: 'https://sketchfab.com/3d-models/iphone-16-free-d58591e88a824dfd8cef0af616273b02',
+    author: 'Wes',
+    authorUrl: 'https://sketchfab.com/wimell',
+    license: 'Sketchfab Standard License',
+    modified: true,
+  },
+  {
+    title: 'Notebook (black+white)',
+    url: 'https://sketchfab.com/3d-models/notebook-blackwhite-f3946ccc6d77475eb2e9b42e2f24ca8f',
+    author: 'KatzeSchwarz',
+    authorUrl: 'https://sketchfab.com/katzeschwarz',
+    license: 'CC BY 4.0',
+    modified: true,
+  },
+  {
+    title: 'Faber Castell Ballpoint Pen',
+    url: 'https://sketchfab.com/3d-models/faber-castell-ballpoint-pen-ca69fdd81e634048b77932b4851115bc',
+    author: 'chemicalX',
+    authorUrl: 'https://sketchfab.com/chemicalX3D',
+    license: 'CC BY 4.0',
+    modified: true,
+  },
+  {
+    title: 'Spiderman - No Way Home',
+    url: 'https://sketchfab.com/3d-models/spiderman-no-way-home-6c2ee86c08af4d8aad782b1c3eaed6e4',
+    author: 'Veysel Gök',
+    authorUrl: 'https://sketchfab.com/veysel.gok.vg',
+    license: 'CC BY 4.0',
+    modified: true,
+  },
+]
 
 const CONTENT: Record<AppId, ReactNode> = {
   showcase: <Showcase />,
@@ -52,48 +119,39 @@ Tips Navigasi:
         <br />
         <small style={{ color: '#aaa' }}>Full Stack Developer & Junior Software Engineer</small>
       </p>
-      <p style={{ marginTop: 14 }}>
-        <b>Environment & Tech Stack</b>
+      <div style={{ marginTop: 14 }}>
+        <b>3D Assets</b>
         <br />
-        Ubuntu Linux (Yaru Dark Theme)
-        <br />
-        Three.js 3D Interactive Room, CSS3DRenderer, React, TypeScript, Remotion.
-      </p>
-      <p style={{ marginTop: 14 }}>
-        <b>Original Web Reference</b>
-        <br />
-        <a
-          href="https://alif-fadillah-portfolio.vercel.app"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: 'var(--ub-orange)' }}
-        >
-          alif-fadillah-portfolio.vercel.app
-        </a>
-      </p>
-      <p style={{ marginTop: 14 }}>
-        <b>3D Model</b>
-        <br />
-        This work is based on{' '}
-        <a
-          href="https://sketchfab.com/3d-models/spiderman-no-way-home-6c2ee86c08af4d8aad782b1c3eaed6e4"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: 'var(--ub-orange)' }}
-        >
-          Spiderman - No Way Home
-        </a>{' '}
-        by Veysel Gök, licensed under{' '}
-        <a
-          href="https://creativecommons.org/licenses/by/4.0/"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: 'var(--ub-orange)' }}
-        >
-          CC BY 4.0
-        </a>
-        . Modified: resized and texture-optimized.
-      </p>
+        Model assets used in the interactive desk scene:
+        <ul style={{ margin: '10px 0 0', paddingLeft: 20, lineHeight: 1.7 }}>
+          {ASSET_CREDITS.map((asset) => (
+            <li key={asset.title} style={{ marginBottom: 5 }}>
+              <a href={asset.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ub-orange)' }}>
+                {asset.title}
+              </a>{' '}
+              by{' '}
+              <a href={asset.authorUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#ddd' }}>
+                {asset.author}
+              </a>{' '}
+              —{' '}
+              {asset.license === 'CC BY 4.0' ? (
+                <a
+                  href="https://creativecommons.org/licenses/by/4.0/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: 'var(--ub-orange)' }}
+                >
+                  {asset.license}
+                </a>
+              ) : (
+                asset.license
+              )}
+              {asset.modified ? ' · modified for this scene' : ''}
+              {asset.title === 'simple retro Desk Lamp' ? ' · used twice' : ''}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   ),
 }
