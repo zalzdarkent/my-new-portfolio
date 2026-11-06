@@ -69,8 +69,10 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
     gltfLoader.loadAsync('./gaming-pc/scene.gltf'),
     gltfLoader.loadAsync('./white_gaming_chair/scene.gltf'),
     gltfLoader.loadAsync('./simple_retro_desk_lamp/scene.gltf'),
+    gltfLoader.loadAsync('./phone_holder/scene.gltf'),
+    gltfLoader.loadAsync('./iphone_16/scene.gltf'),
   ])
-    .then(([pcGltf, chairGltf, lampGltf]) => {
+    .then(([pcGltf, chairGltf, lampGltf, phoneHolderGltf, iphoneGltf]) => {
       const pcModel = pcGltf.scene
 
       pcModel.traverse((child) => {
@@ -163,6 +165,50 @@ export function buildDesk(scene: THREE.Scene, onModelsReady: () => void): DeskSe
       lampLight.position.set(-0.68, 1.12, 0.04 - DESK_BACK_OFFSET)
       lampLight.castShadow = true
       scene.add(lampLight)
+
+      const phoneHolder = phoneHolderGltf.scene
+      phoneHolder.scale.setScalar(0.1)
+      phoneHolder.updateMatrixWorld(true)
+      const holderBounds = new THREE.Box3().setFromObject(phoneHolder)
+      const holderSize = holderBounds.getSize(new THREE.Vector3())
+      const holderCenter = holderBounds.getCenter(new THREE.Vector3())
+      phoneHolder.position.set(-0.42 - holderCenter.x, 0.76 - holderBounds.min.y, 0.1 - holderCenter.z)
+      phoneHolder.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+          child.frustumCulled = true
+        }
+      })
+      scene.add(phoneHolder)
+
+      const iphone = iphoneGltf.scene
+      iphone.scale.setScalar(0.01)
+      iphone.rotation.x = -Math.PI / 18
+      iphone.updateMatrixWorld(true)
+      const iphoneBounds = new THREE.Box3().setFromObject(iphone)
+      const iphoneCenter = iphoneBounds.getCenter(new THREE.Vector3())
+      iphone.position.set(
+        -0.42 - iphoneCenter.x,
+        0.762 + holderSize.y * 0.36 - iphoneBounds.min.y,
+        0.077 - iphoneCenter.z,
+      )
+      iphone.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+          child.frustumCulled = true
+          // Object_18 is the iPhone's front glass in this GLTF.
+          if (child.name === 'Object_18') {
+            child.material = new THREE.MeshBasicMaterial({
+              color: 0xffffff,
+              side: THREE.DoubleSide,
+              toneMapped: false,
+            })
+          }
+        }
+      })
+      scene.add(iphone)
 
       onModelsReady()
     })
