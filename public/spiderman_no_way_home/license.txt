@@ -1,0 +1,11 @@
+Model Information:
+* title:	Spiderman - No Way Home
+* source:	https://sketchfab.com/3d-models/spiderman-no-way-home-6c2ee86c08af4d8aad782b1c3eaed6e4
+* author:	Veysel Gök (https://sketchfab.com/veysel.gok.vg)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Spiderman - No Way Home" (https://sketchfab.com/3d-models/spiderman-no-way-home-6c2ee86c08af4d8aad782b1c3eaed6e4) by Veysel Gök (https://sketchfab.com/veysel.gok.vg) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -27,6 +27,7 @@ export function buildDesk(
   scene: THREE.Scene,
   onModelsReady: () => void,
   onPhoneScreenReady: (screen: THREE.Mesh) => void,
+  onSpiderManReady: (model: THREE.Group) => void,
 ): DeskSetup {
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.13 }))
   floor.rotation.x = -Math.PI / 2
@@ -77,8 +78,9 @@ export function buildDesk(
     gltfLoader.loadAsync('./iphone_16/scene.gltf'),
     gltfLoader.loadAsync('./notebook_blackwhite/scene.gltf'),
     gltfLoader.loadAsync('./faber_castell_ballpoint_pen/scene.gltf'),
+    gltfLoader.loadAsync('./spiderman_no_way_home/scene.gltf'),
   ])
-    .then(([pcGltf, chairGltf, lampGltf, phoneHolderGltf, iphoneGltf, notebookGltf, penGltf]) => {
+    .then(([pcGltf, chairGltf, lampGltf, phoneHolderGltf, iphoneGltf, notebookGltf, penGltf, spiderManGltf]) => {
       const pcModel = pcGltf.scene
 
       pcModel.traverse((child) => {
@@ -269,6 +271,43 @@ export function buildDesk(
         }
       })
       scene.add(pen)
+
+      const spiderMan = spiderManGltf.scene
+      const excludedParts: THREE.Object3D[] = []
+      spiderMan.traverse((child) => {
+        if (
+          child.name === 'Platform' ||
+          child.name === 'Spiderman_1' ||
+          child.name === 'Spiderman_3' ||
+          child.name === 'Web_1' ||
+          child.name === 'Web_2' ||
+          child.name === 'Text'
+        ) {
+          excludedParts.push(child)
+          return
+        }
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true
+          child.receiveShadow = false
+          child.frustumCulled = true
+        }
+      })
+      excludedParts.forEach((part) => part.removeFromParent())
+      spiderMan.updateMatrixWorld(true)
+      const spiderManBounds = new THREE.Box3().setFromObject(spiderMan)
+      const spiderManSize = spiderManBounds.getSize(new THREE.Vector3())
+      spiderMan.scale.setScalar(0.10 / spiderManSize.y)
+      spiderMan.updateMatrixWorld(true)
+      spiderManBounds.setFromObject(spiderMan)
+      const spiderManCenter = spiderManBounds.getCenter(new THREE.Vector3())
+      spiderMan.position.set(
+        0.5 - spiderManCenter.x,
+        0.76 - spiderManBounds.min.y,
+        0.24 - spiderManCenter.z,
+      )
+      scene.add(spiderMan)
+      scene.updateMatrixWorld(true)
+      onSpiderManReady(spiderMan)
 
       onModelsReady()
     })

@@ -10,7 +10,7 @@ import { buildDesk } from './components/scene/DeskSetup'
 import { INTRO, SCREEN, VIEWS } from './constants/sceneConstants'
 import { playKeyClick, playMouseDown, playMouseUp, playViewTransition } from './sound'
 
-export type Mode = 'overview' | 'desk' | 'screen' | 'phone'
+export type Mode = 'overview' | 'desk' | 'screen' | 'phone' | 'spiderman'
 const BEGIN_TEXT = 'Click anywhere to begin '
 const PHONE_SCREEN_W = 390
 const PHONE_SCREEN_H = 844
@@ -105,9 +105,13 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     root.appendChild(gl.domElement)
 
     const phoneMeshRef: { current: THREE.Mesh | null } = { current: null }
+    const spiderManRef: { current: THREE.Group | null } = { current: null }
     const phoneCenter = new THREE.Vector3()
     const phoneNormal = new THREE.Vector3(0, 0, 1)
     const phoneSize = new THREE.Vector2()
+    const spiderManCenter = new THREE.Vector3()
+    const spiderManNormal = new THREE.Vector3(0, 0, 1)
+    const spiderManSize = new THREE.Vector2()
     const { monitor, life } = buildDesk(scene, () => {
       // Pre-compile shaders and render a warm-up frame to upload all textures to GPU before user clicks START
       gl.compile(scene, camera)
@@ -132,6 +136,12 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       phoneScreenObj.quaternion.copy(worldQuaternion)
       phoneScreenObj.scale.set(phoneSize.x / PHONE_SCREEN_W * 1.02, phoneSize.y / PHONE_SCREEN_H * 1.02, 1)
       phoneScreenObj.visible = true
+    }, (spiderMan) => {
+      spiderManRef.current = spiderMan
+      const bounds = new THREE.Box3().setFromObject(spiderMan)
+      const size = bounds.getSize(new THREE.Vector3())
+      spiderManCenter.copy(bounds.getCenter(new THREE.Vector3()))
+      spiderManSize.set(size.x, size.y)
     })
 
     // Drag to turn around the desk in the overview (360 degrees full rotation)
@@ -198,15 +208,20 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera)
       const hitMonitor = ray.intersectObject(monitor, true).length > 0
       const hitPhone = phoneMeshRef.current ? ray.intersectObject(phoneMeshRef.current, true).length > 0 : false
-      if (m === 'desk' && hitPhone) setMode('phone')
+      const hitSpiderMan = spiderManRef.current ? ray.intersectObject(spiderManRef.current, true).length > 0 : false
+      if (m === 'desk' && hitSpiderMan) setMode('spiderman')
+      else if (m === 'desk' && hitPhone) setMode('phone')
       else if (m === 'desk' && hitMonitor) setMode('screen')
       if (m === 'screen' && !hitMonitor) setMode('desk')
       if (m === 'phone' && !hitPhone) setMode('desk')
+      if (m === 'spiderman' && !hitSpiderMan) setMode('desk')
     }
     root.addEventListener('pointerdown', onDown)
     root.addEventListener('pointerup', onUp)
     const onKey = (e: KeyboardEvent) =>
-      e.key === 'Escape' && (modeRef.current === 'screen' || modeRef.current === 'phone') && setMode('desk')
+      e.key === 'Escape' &&
+      (modeRef.current === 'screen' || modeRef.current === 'phone' || modeRef.current === 'spiderman') &&
+      setMode('desk')
     addEventListener('keydown', onKey)
 
     const screenNormal = new THREE.Vector3(0, -Math.sin(SCREEN.rotX), Math.cos(SCREEN.rotX))
@@ -269,6 +284,9 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
         } else if (current === 'phone') {
           zoomPos(phoneCenter, phoneNormal, phoneSize.x, phoneSize.y, goal, 1.18)
           goalLook.copy(phoneCenter)
+        } else if (current === 'spiderman') {
+          zoomPos(spiderManCenter, spiderManNormal, spiderManSize.x, spiderManSize.y, goal, 1.4)
+          goalLook.copy(spiderManCenter)
         } else if (current === 'desk') {
           viewPos(VIEWS.desk, goal).add(new THREE.Vector3(smooth.x * 0.08, smooth.y * 0.04, 0))
           goalLook.copy(VIEWS.desk.look)
@@ -302,6 +320,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       root.removeEventListener('pointerup', onUp)
       controls.dispose()
       phoneMeshRef.current = null
+      spiderManRef.current = null
       gl.dispose()
       gl.domElement.remove()
       css.domElement.remove()

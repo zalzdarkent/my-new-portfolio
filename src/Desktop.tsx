@@ -71,6 +71,29 @@ Tips Navigasi:
           alif-fadillah-portfolio.vercel.app
         </a>
       </p>
+      <p style={{ marginTop: 14 }}>
+        <b>3D Model</b>
+        <br />
+        This work is based on{' '}
+        <a
+          href="https://sketchfab.com/3d-models/spiderman-no-way-home-6c2ee86c08af4d8aad782b1c3eaed6e4"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: 'var(--ub-orange)' }}
+        >
+          Spiderman - No Way Home
+        </a>{' '}
+        by Veysel Gök, licensed under{' '}
+        <a
+          href="https://creativecommons.org/licenses/by/4.0/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: 'var(--ub-orange)' }}
+        >
+          CC BY 4.0
+        </a>
+        . Modified: resized and texture-optimized.
+      </p>
     </div>
   ),
 }
