@@ -30,14 +30,20 @@ export function subscribeSound(fn: (soundOn: boolean) => void): () => void {
   return () => listeners.delete(fn)
 }
 
+let spidermanAudio: HTMLAudioElement | null = null
+let isSpidermanModeActive = false
+
 export function toggleSound(): boolean {
   const c = getCtx()
   muted = !muted
   if (masterGain && c) {
     masterGain.gain.setTargetAtTime(muted ? 0 : 1, c.currentTime, 0.03)
   }
-  if (muted && jokowiAudio) {
-    jokowiAudio.pause()
+  if (muted) {
+    if (jokowiAudio) jokowiAudio.pause()
+    if (spidermanAudio) spidermanAudio.pause()
+  } else if (!muted && isSpidermanModeActive && spidermanAudio) {
+    spidermanAudio.play().catch(() => {})
   }
   listeners.forEach((fn) => fn(!muted))
   return !muted
@@ -58,6 +64,32 @@ export function playHidupJokowi() {
     })
   } catch (err) {
     console.warn('Audio error:', err)
+  }
+}
+
+export function playSpidermanMemeSong() {
+  isSpidermanModeActive = true
+  if (muted) return
+  try {
+    if (!spidermanAudio) {
+      spidermanAudio = new Audio('./spiderman-meme-song.mp3')
+      spidermanAudio.loop = true
+    }
+    spidermanAudio.currentTime = 0
+    spidermanAudio.volume = 0.75
+    spidermanAudio.play().catch((err) => {
+      console.warn('Spider-Man audio play failed:', err)
+    })
+  } catch (err) {
+    console.warn('Spider-Man audio error:', err)
+  }
+}
+
+export function stopSpidermanMemeSong() {
+  isSpidermanModeActive = false
+  if (spidermanAudio) {
+    spidermanAudio.pause()
+    spidermanAudio.currentTime = 0
   }
 }
 

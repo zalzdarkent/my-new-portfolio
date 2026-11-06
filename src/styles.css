@@ -398,3 +398,341 @@ html, body, #root {
   .hud { left: var(--s16); top: var(--s16); }
   .begin { bottom: var(--s32); }
 }
+
+/* ---------- Spider-Man Multiverse Overlay ---------- */
+.spidey-overlay-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  overflow: hidden;
+}
+.spidey-overlay-root.active {
+  opacity: 1;
+}
+
+/* Top Multiverse Banner */
+.spidey-top-banner {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  animation: spideyBannerSlide 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes spideyBannerSlide {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.spidey-banner-pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: rgba(14, 18, 30, 0.88);
+  border: 1px solid rgba(255, 60, 60, 0.5);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 30, 30, 0.25);
+  backdrop-filter: blur(12px);
+  color: #fff;
+}
+.spidey-icon {
+  width: 18px;
+  height: 18px;
+  color: #ff3344;
+}
+.spidey-banner-text {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #f0f0f5;
+}
+.spidey-song-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffb400;
+  padding-left: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+}
+.spidey-equalizer-bar {
+  display: inline-block;
+  width: 3px;
+  height: 12px;
+  background: #ffb400;
+  border-radius: 2px;
+  animation: spideyEqualizer 0.8s ease-in-out infinite alternate;
+}
+.spidey-equalizer-bar:nth-child(2) {
+  animation-delay: 0.2s;
+  height: 16px;
+}
+.spidey-equalizer-bar:nth-child(3) {
+  animation-delay: 0.4s;
+  height: 9px;
+}
+@keyframes spideyEqualizer {
+  0% { transform: scaleY(0.4); }
+  100% { transform: scaleY(1.3); }
+}
+
+/* Cards Container across the 3 Heroes (positioned without covering Spider-Men) */
+.spidey-cards-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Individual Comic-HUD Card */
+.spidey-card {
+  position: absolute;
+  width: 245px;
+  border-radius: 10px;
+  border-width: 1.5px;
+  border-style: solid;
+  padding: 12px 14px;
+  pointer-events: auto;
+  opacity: 0;
+  backdrop-filter: blur(14px);
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  box-sizing: border-box;
+}
+
+/* Left Card: Andrew Garfield (Peter-Three) - positioned snug beside Andrew's figure */
+.spidey-card-andrew {
+  left: max(16px, calc(50% - 485px));
+  top: 62%;
+  transform: translateY(-50%);
+  animation: spideySlideInLeft 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes spideySlideInLeft {
+  0% {
+    opacity: 0;
+    transform: translate(-30px, -50%) scale(0.88);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(4px, -50%) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, -50%) scale(1);
+  }
+}
+
+/* Center Card: Tom Holland (Peter-One) placed below his leaping torso, above No Way Home base */
+.spidey-card-tom {
+  left: 50%;
+  top: 55%;
+  transform: translate(-50%, -50%);
+  animation: spideyPopCenter 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes spideyPopCenter {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -35%) scale(0.8);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(-50%, -52%) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Right Card: Tobey Maguire (Peter-Two) - positioned snug beside Tobey's figure */
+.spidey-card-tobey {
+  right: max(16px, calc(50% - 485px));
+  top: 62%;
+  transform: translateY(-50%);
+  animation: spideySlideInRight 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes spideySlideInRight {
+  0% {
+    opacity: 0;
+    transform: translate(30px, -50%) scale(0.88);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(-4px, -50%) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, -50%) scale(1);
+  }
+}
+
+/* Corner Spider Accent */
+.spidey-card-corner {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 14px;
+  opacity: 0.8;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+/* Variant Badge */
+.spidey-variant-badge {
+  display: inline-block;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  background: rgba(0, 0, 0, 0.45);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+/* Character Name */
+.spidey-character-name {
+  margin: 0 0 4px 0;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: #ffffff;
+  text-transform: uppercase;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+/* Real Actor Row */
+.spidey-actor-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.spidey-actor-label {
+  font-size: 10.5px;
+  color: #a0a5b5;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.spidey-actor-name {
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 8px currentColor;
+}
+
+/* Universe & Suit Meta Box */
+.spidey-meta-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.spidey-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.spidey-meta-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #8a90a0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.spidey-meta-val {
+  font-size: 10.5px;
+  color: #e0e4f0;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+/* Quote */
+.spidey-quote {
+  font-size: 10.5px;
+  font-style: italic;
+  color: #cbd5e1;
+  line-height: 1.35;
+  opacity: 0.9;
+}
+
+/* Bottom Hint */
+.spidey-bottom-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  animation: spideyBannerSlide 0.6s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.spidey-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10, 12, 20, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s, background 0.2s, border-color 0.2s;
+}
+.spidey-back-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(20, 24, 38, 0.95);
+  border-color: #ff3344;
+  color: #ffffff;
+}
+.spidey-key-badge {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 900px) {
+  .spidey-cards-container {
+    inset: auto 0 54px 0;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 12px;
+    padding: 10px 16px;
+    justify-content: flex-start;
+    pointer-events: auto;
+  }
+  .spidey-card {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    flex: 0 0 240px;
+    animation: none !important;
+    opacity: 1;
+  }
+}

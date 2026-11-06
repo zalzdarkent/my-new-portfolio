@@ -428,6 +428,12 @@ export function buildDesk(
       spiderMan.position.set(0.7, 0.76, 0.24)
       scene.add(spiderMan)
       scene.updateMatrixWorld(true)
+
+      // Store references to the 3 distinct Spider-Men characters
+      spiderMan.userData.spidey1 = spiderManModel.getObjectByName('Spiderman_1') // Tobey Maguire (Right)
+      spiderMan.userData.spidey2 = spiderManModel.getObjectByName('Spiderman_2') // Andrew Garfield (Left)
+      spiderMan.userData.spidey3 = spiderManModel.getObjectByName('Spiderman_3') // Tom Holland (Center)
+
       onSpiderManReady(spiderMan)
 
       onModelsReady()

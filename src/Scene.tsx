@@ -6,9 +6,18 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import Desktop, { SCREEN_W, SCREEN_H } from './Desktop'
 import PhoneExperience, { type PhonePage } from './components/desktop/PhoneExperience'
 import Hud from './Hud'
+import SpidermanOverlay from './components/scene/SpidermanOverlay'
 import { buildDesk } from './components/scene/DeskSetup'
 import { INTRO, SCREEN, VIEWS } from './constants/sceneConstants'
-import { playHidupJokowi, playKeyClick, playMouseDown, playMouseUp, playViewTransition } from './sound'
+import {
+  playHidupJokowi,
+  playKeyClick,
+  playMouseDown,
+  playMouseUp,
+  playSpidermanMemeSong,
+  playViewTransition,
+  stopSpidermanMemeSong,
+} from './sound'
 
 export type Mode = 'overview' | 'desk' | 'screen' | 'phone' | 'spiderman'
 const BEGIN_TEXT = 'Click anywhere to begin '
@@ -296,7 +305,13 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       }
 
       if (modeRef.current !== current) {
+        if (current === 'spiderman') {
+          stopSpidermanMemeSong()
+        }
         current = modeRef.current
+        if (current === 'spiderman') {
+          playSpidermanMemeSong()
+        }
         playViewTransition()
         controls.enabled = false
         from.copy(camera.position)
@@ -353,6 +368,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     tick()
 
     return () => {
+      stopSpidermanMemeSong()
       cancelAnimationFrame(raf)
       removeEventListener('resize', resize)
       removeEventListener('pointermove', onMove)
@@ -383,6 +399,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
         <span className="blink">_</span>
       </p>
       <Hud show={mode === 'desk'} onOverview={() => setMode('overview')} />
+      <SpidermanOverlay active={mode === 'spiderman'} onClose={() => setMode('desk')} />
     </div>
   )
 }
