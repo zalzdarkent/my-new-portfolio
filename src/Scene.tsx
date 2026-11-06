@@ -8,7 +8,7 @@ import PhoneExperience, { type PhonePage } from './components/desktop/PhoneExper
 import Hud from './Hud'
 import { buildDesk } from './components/scene/DeskSetup'
 import { INTRO, SCREEN, VIEWS } from './constants/sceneConstants'
-import { playKeyClick, playMouseDown, playMouseUp, playViewTransition } from './sound'
+import { playHidupJokowi, playKeyClick, playMouseDown, playMouseUp, playViewTransition } from './sound'
 
 export type Mode = 'overview' | 'desk' | 'screen' | 'phone' | 'spiderman'
 const BEGIN_TEXT = 'Click anywhere to begin '
@@ -121,6 +121,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
 
     const phoneMeshRef: { current: THREE.Mesh | null } = { current: null }
     const spiderManRef: { current: THREE.Group | null } = { current: null }
+    const speakersRef: { current: THREE.Group | null } = { current: null }
     const phoneCenter = new THREE.Vector3()
     const phoneNormal = new THREE.Vector3(0, 0, 1)
     const phoneSize = new THREE.Vector2()
@@ -166,6 +167,8 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       const size = bounds.getSize(new THREE.Vector3())
       spiderManCenter.copy(bounds.getCenter(new THREE.Vector3()))
       spiderManSize.set(size.x, size.y)
+    }, (speakers) => {
+      speakersRef.current = speakers
     })
 
     // Drag to turn around the desk in the overview (360 degrees full rotation)
@@ -227,6 +230,11 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       if ((e.target as HTMLElement | null)?.closest?.('.hud')) return
       const m = modeRef.current
       ray.setFromCamera(new THREE.Vector2((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera)
+      const hitSpeaker = speakersRef.current ? ray.intersectObject(speakersRef.current, true).length > 0 : false
+      if (hitSpeaker) {
+        playHidupJokowi()
+        return
+      }
       const hitSpiderMan = spiderManRef.current ? ray.intersectObject(spiderManRef.current, true).length > 0 : false
       if (m === 'overview') return setMode(hitSpiderMan ? 'spiderman' : 'desk')
       if (m === 'screen' && (e.target as HTMLElement | null)?.closest?.('.os')) return
@@ -354,6 +362,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       controls.dispose()
       phoneMeshRef.current = null
       spiderManRef.current = null
+      speakersRef.current = null
       phoneOverlayEl.remove()
       gl.dispose()
       gl.domElement.remove()

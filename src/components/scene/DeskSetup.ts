@@ -28,6 +28,7 @@ export function buildDesk(
   onModelsReady: () => void,
   onPhoneScreenReady: (screen: THREE.Mesh) => void,
   onSpiderManReady: (model: THREE.Group) => void,
+  onSpeakersReady: (speakers: THREE.Group) => void,
 ): DeskSetup {
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.13 }))
   floor.rotation.x = -Math.PI / 2
@@ -123,6 +124,77 @@ export function buildDesk(
       pcModel.rotation.y = -Math.PI / 2
       pcModel.position.set(0.22, 0.7355, 0.18 - DESK_BACK_OFFSET)
       monitorHitbox.add(pcModel)
+      pcModel.updateMatrixWorld(true)
+
+      // Collect desktop speaker parts and create click hitboxes
+      const speakersGroup = new THREE.Group()
+      const speakerNodeNames = new Set([
+        'Object_240', 'Object_256', 'Object_242', 'Object_244',
+        'Object_246', 'Object_248', 'Object_250', 'Object_252',
+        'Object_254', 'Object_258', 'Object_260', 'Object_262', 'Object_264',
+        'Cube081_118', 'Cube088_126', 'Cube068_119', 'Cube069_121',
+        'Cube070_128', 'Cube071_129', 'Cube082_130', 'Color-PewDiePie-Logo_120',
+        'Cylinder013_122', 'Cylinder014_123', 'Cylinder015_124', 'Text001_125',
+      ])
+
+      const speakerMeshes: THREE.Mesh[] = []
+      pcModel.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          const parentName = child.parent?.name || ''
+          if (
+            speakerNodeNames.has(child.name) ||
+            speakerNodeNames.has(parentName) ||
+            child.name.toLowerCase().includes('pewdiepie') ||
+            parentName.toLowerCase().includes('pewdiepie')
+          ) {
+            speakerMeshes.push(child)
+          }
+        }
+      })
+
+      const leftBox = new THREE.Box3()
+      const rightBox = new THREE.Box3()
+      speakerMeshes.forEach((mesh) => {
+        const b = new THREE.Box3().setFromObject(mesh)
+        const c = b.getCenter(new THREE.Vector3())
+        if (c.x < -0.05) leftBox.union(b)
+        else if (c.x > 0.05) rightBox.union(b)
+      })
+
+      const speakerHitboxMaterial = new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0,
+        colorWrite: false,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      })
+
+      if (!leftBox.isEmpty()) {
+        const sz = leftBox.getSize(new THREE.Vector3()).addScalar(0.04)
+        const c = leftBox.getCenter(new THREE.Vector3())
+        const leftHitbox = new THREE.Mesh(new THREE.BoxGeometry(sz.x, sz.y, sz.z), speakerHitboxMaterial)
+        leftHitbox.position.copy(c)
+        speakersGroup.add(leftHitbox)
+      } else {
+        const leftHitbox = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.20, 0.12), speakerHitboxMaterial)
+        leftHitbox.position.set(-0.36, 0.84, -0.06 - DESK_BACK_OFFSET)
+        speakersGroup.add(leftHitbox)
+      }
+
+      if (!rightBox.isEmpty()) {
+        const sz = rightBox.getSize(new THREE.Vector3()).addScalar(0.04)
+        const c = rightBox.getCenter(new THREE.Vector3())
+        const rightHitbox = new THREE.Mesh(new THREE.BoxGeometry(sz.x, sz.y, sz.z), speakerHitboxMaterial)
+        rightHitbox.position.copy(c)
+        speakersGroup.add(rightHitbox)
+      } else {
+        const rightHitbox = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.20, 0.12), speakerHitboxMaterial)
+        rightHitbox.position.set(0.24, 0.84, -0.06 - DESK_BACK_OFFSET)
+        speakersGroup.add(rightHitbox)
+      }
+
+      scene.add(speakersGroup)
+      onSpeakersReady(speakersGroup)
 
       // Wrap ROG model in a centered group
       const rogGroup = new THREE.Group()

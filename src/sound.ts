@@ -36,8 +36,29 @@ export function toggleSound(): boolean {
   if (masterGain && c) {
     masterGain.gain.setTargetAtTime(muted ? 0 : 1, c.currentTime, 0.03)
   }
+  if (muted && jokowiAudio) {
+    jokowiAudio.pause()
+  }
   listeners.forEach((fn) => fn(!muted))
   return !muted
+}
+
+let jokowiAudio: HTMLAudioElement | null = null
+
+export function playHidupJokowi() {
+  if (muted) return
+  try {
+    if (!jokowiAudio) {
+      jokowiAudio = new Audio('./hidup-jokowi.mp3')
+    }
+    jokowiAudio.currentTime = 0
+    jokowiAudio.volume = 1.0
+    jokowiAudio.play().catch((err) => {
+      console.warn('Audio play failed:', err)
+    })
+  } catch (err) {
+    console.warn('Audio error:', err)
+  }
 }
 
 // Quick terminal hacker blip / floppy seek pulse during boot screen log
