@@ -14,7 +14,7 @@ const BOOT_LOGS = [
   { prefix: '[SEC ]', text: 'Decryption keys loaded: SHA256-ECDSA Handshake', ok: 'VERIFIED' },
   { prefix: '[MODL]', text: 'Loading 3D asset pipeline: GLTF Mesh & Texture streaming', ok: 'SYNCED' },
   { prefix: '[ROOM]', text: 'Allocating WebGL Depth Buffer & Virtual Canvas', ok: 'COMPILED' },
-  { prefix: '[OS  ]', text: 'Kernel boot: Ubuntu 24.04 LTS (Noble Numbat) Yaru Desktop', ok: 'LOADED' },
+  { prefix: '[OS  ]', text: 'Kernel boot: Ubuntu 26.04 LTS (Noble Numbat) Yaru Desktop', ok: 'LOADED' },
 ]
 
 function today() {
