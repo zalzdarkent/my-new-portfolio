@@ -48,7 +48,7 @@ const HEROES = [
     actor: 'Tobey Maguire',
     universe: 'Spider-Man Trilogy (Sam Raimi)',
     suit: 'Raised Silver Webbing • Organic Webs',
-    quote: '“Aaarrgghh, my back hurt!.”',
+    quote: '“The Avengers? That’s great! What is that?.”',
     accentColor: '#ffffff',
     borderGlow: 'rgba(225, 29, 36, 0.75)',
     bgGradient: 'linear-gradient(135deg, rgba(28, 14, 20, 0.92) 0%, rgba(14, 14, 20, 0.96) 100%)',
