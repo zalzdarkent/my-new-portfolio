@@ -507,8 +507,8 @@ html, body, #root {
 
 /* Left Card: Andrew Garfield (Peter-Three) - positioned snug beside Andrew's figure */
 .spidey-card-andrew {
-  left: max(16px, calc(50% - 485px));
-  top: 62%;
+  left: max(16px, calc(50% - 560px));
+  top: 68%;
   transform: translateY(-50%);
   animation: spideySlideInLeft 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
@@ -553,8 +553,8 @@ html, body, #root {
 
 /* Right Card: Tobey Maguire (Peter-Two) - positioned snug beside Tobey's figure */
 .spidey-card-tobey {
-  right: max(16px, calc(50% - 485px));
-  top: 62%;
+  right: max(16px, calc(50% - 560px));
+  top: 68%;
   transform: translateY(-50%);
   animation: spideySlideInRight 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }

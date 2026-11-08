@@ -54,6 +54,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     return el
   }, [])
   const [mode, setMode] = useState<Mode>('overview')
+  const [spidermanOverlayActive, setSpidermanOverlayActive] = useState(false)
   const [phonePage, setPhonePage] = useState<PhonePage>('lock')
   const [typedBegin, setTypedBegin] = useState('')
   const modeRef = useRef<Mode>('overview')
@@ -260,14 +261,26 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       else if (m === 'desk' && hitMonitor) setMode('screen')
       if (m === 'screen' && !hitMonitor) setMode('desk')
       if (m === 'phone' && !hitPhone) setMode('desk')
-      if (m === 'spiderman' && !hitSpiderMan) setMode('desk')
+      if (m === 'spiderman' && !hitSpiderMan) {
+        setSpidermanOverlayActive(false)
+        stopSpidermanMemeSong()
+        setMode('desk')
+      }
     }
     root.addEventListener('pointerdown', onDown)
     root.addEventListener('pointerup', onUp)
-    const onKey = (e: KeyboardEvent) =>
-      e.key === 'Escape' &&
-      (modeRef.current === 'screen' || modeRef.current === 'phone' || modeRef.current === 'spiderman') &&
-      setMode('desk')
+    const onKey = (e: KeyboardEvent) => {
+      if (
+        e.key === 'Escape' &&
+        (modeRef.current === 'screen' || modeRef.current === 'phone' || modeRef.current === 'spiderman')
+      ) {
+        if (modeRef.current === 'spiderman') {
+          setSpidermanOverlayActive(false)
+          stopSpidermanMemeSong()
+        }
+        setMode('desk')
+      }
+    }
     addEventListener('keydown', onKey)
 
     const screenNormal = new THREE.Vector3(0, -Math.sin(SCREEN.rotX), Math.cos(SCREEN.rotX))
@@ -283,6 +296,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     let hasStarted = false
     let t0 = 0
     let dur = 3.2
+    let spidermanArrived = false
     const clock = new THREE.Clock()
     let raf = 0
     const tick = () => {
@@ -309,8 +323,9 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
           stopSpidermanMemeSong()
         }
         current = modeRef.current
-        if (current === 'spiderman') {
-          playSpidermanMemeSong()
+        if (current !== 'spiderman' && spidermanArrived) {
+          spidermanArrived = false
+          setSpidermanOverlayActive(false)
         }
         playViewTransition()
         controls.enabled = false
@@ -351,6 +366,17 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
         camera.lookAt(look)
       }
 
+      if (current === 'spiderman') {
+        if (p >= 1 && !spidermanArrived) {
+          spidermanArrived = true
+          setSpidermanOverlayActive(true)
+          playSpidermanMemeSong()
+        }
+      } else if (spidermanArrived) {
+        spidermanArrived = false
+        setSpidermanOverlayActive(false)
+      }
+
       // Allow pointer events to pass through to CSS3D when zoomed into 'screen' or 'phone' mode.
       gl.domElement.style.pointerEvents = current === 'screen' || current === 'phone' ? 'none' : 'auto'
       toCam.copy(camera.position).sub(SCREEN.center)
@@ -369,6 +395,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
 
     return () => {
       stopSpidermanMemeSong()
+      setSpidermanOverlayActive(false)
       cancelAnimationFrame(raf)
       removeEventListener('resize', resize)
       removeEventListener('pointermove', onMove)
@@ -399,7 +426,14 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
         <span className="blink">_</span>
       </p>
       <Hud show={mode === 'desk'} onOverview={() => setMode('overview')} />
-      <SpidermanOverlay active={mode === 'spiderman'} onClose={() => setMode('desk')} />
+      <SpidermanOverlay
+        active={spidermanOverlayActive}
+        onClose={() => {
+          setSpidermanOverlayActive(false)
+          stopSpidermanMemeSong()
+          setMode('desk')
+        }}
+      />
     </div>
   )
 }

@@ -16,7 +16,7 @@ function getCtx(): AudioContext | null {
     masterGain.connect(ctx.destination)
   }
   if (ctx.state === 'suspended') {
-    ctx.resume().catch(() => {})
+    ctx.resume().catch(() => { })
   }
   return ctx
 }
@@ -43,7 +43,7 @@ export function toggleSound(): boolean {
     if (jokowiAudio) jokowiAudio.pause()
     if (spidermanAudio) spidermanAudio.pause()
   } else if (!muted && isSpidermanModeActive && spidermanAudio) {
-    spidermanAudio.play().catch(() => {})
+    spidermanAudio.play().catch(() => { })
   }
   listeners.forEach((fn) => fn(!muted))
   return !muted
@@ -55,7 +55,7 @@ export function playHidupJokowi() {
   if (muted) return
   try {
     if (!jokowiAudio) {
-      jokowiAudio = new Audio('./hidup-jokowi.mp3')
+      jokowiAudio = new Audio('./hidup-ksdhfuds.mp3')
     }
     jokowiAudio.currentTime = 0
     jokowiAudio.volume = 1.0
@@ -98,7 +98,7 @@ export function playBootBlip(high = false) {
   const c = getCtx()
   if (!c || !masterGain || muted) return
   if (c.state === 'suspended') {
-    c.resume().catch(() => {})
+    c.resume().catch(() => { })
     if (c.state === 'suspended') return
   }
 
@@ -131,7 +131,7 @@ export function playBiosBeep() {
   const c = getCtx()
   if (!c || !masterGain || muted) return
   if (c.state === 'suspended') {
-    c.resume().catch(() => {})
+    c.resume().catch(() => { })
     if (c.state === 'suspended') return
   }
 
