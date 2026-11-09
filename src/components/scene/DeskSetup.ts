@@ -301,8 +301,9 @@ export function buildDesk(
       lampLight.castShadow = false
       scene.add(lampLight)
 
-      const frontLampLight = new THREE.PointLight(0xffc98a, 1.8, 2.2, 2)
-      frontLampLight.position.set(0.8, 1.12, 0.2 - DESK_BACK_OFFSET)
+      const frontLampLight = new THREE.PointLight(0xffdfb0, 3.8, 3.2, 2)
+      frontLampLight.position.set(0.78, 1.10, 0.18)
+      frontLampLight.castShadow = false
       scene.add(frontLampLight)
 
       const phoneHolder = phoneHolderGltf.scene
@@ -433,6 +434,31 @@ export function buildDesk(
       spiderMan.userData.spidey1 = spiderManModel.getObjectByName('Spiderman_1') // Tobey Maguire (Right)
       spiderMan.userData.spidey2 = spiderManModel.getObjectByName('Spiderman_2') // Andrew Garfield (Left)
       spiderMan.userData.spidey3 = spiderManModel.getObjectByName('Spiderman_3') // Tom Holland (Center)
+
+      // Dedicated showcase lights for the Spider-Man diorama
+      // Front key light: bright, clean illumination directly onto the faces & suits of all 3 Spider-Men
+      const spideyKeyLight = new THREE.PointLight(0xfff6ea, 3.2, 1.8, 2)
+      spideyKeyLight.position.set(0.70, 1.08, 0.58)
+      spideyKeyLight.castShadow = false
+      scene.add(spideyKeyLight)
+
+      // Left fill light: brightens Andrew Garfield (Peter-Three) from front-left
+      const spideyFillLeft = new THREE.PointLight(0xdff0ff, 2.2, 1.4, 2)
+      spideyFillLeft.position.set(0.54, 0.96, 0.46)
+      spideyFillLeft.castShadow = false
+      scene.add(spideyFillLeft)
+
+      // Right fill light: brightens Tobey Maguire (Peter-Two) and his silver webbing from front-right
+      const spideyFillRight = new THREE.PointLight(0xffeedd, 2.2, 1.4, 2)
+      spideyFillRight.position.set(0.86, 0.96, 0.46)
+      spideyFillRight.castShadow = false
+      scene.add(spideyFillRight)
+
+      // Top-back rim light: subtle rim glow to clearly separate the trio from dark background
+      const spideyRimLight = new THREE.PointLight(0xffffff, 1.6, 1.2, 2)
+      spideyRimLight.position.set(0.70, 1.15, 0.12)
+      spideyRimLight.castShadow = false
+      scene.add(spideyRimLight)
 
       onSpiderManReady(spiderMan)
 
