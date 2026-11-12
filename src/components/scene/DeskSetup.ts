@@ -343,6 +343,17 @@ export function buildDesk(
           if (child.name === 'Object_18') {
             child.material = holeMat
             phoneScreen = child
+          } else if (
+            child.name === 'Object_12' ||
+            child.name === 'Object_14' ||
+            child.name === 'Object_16' ||
+            child.name === 'Object_100'
+          ) {
+            // Hide the 3D model's built-in static notch and camera cutouts so they don't
+            // clash or stack with the interactive software Dynamic Island in CSS!
+            child.visible = false
+            child.castShadow = false
+            child.receiveShadow = false
           }
         }
       })

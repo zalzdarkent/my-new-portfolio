@@ -1,0 +1,28 @@
+/* Keyframes for migrated Loader + SpidermanOverlay (utilities reference these by name). */
+@keyframes crtScan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+@keyframes blink { 50% { opacity: 0; } }
+/* .blink is still used by Scene.tsx */
+.blink { animation: blink 1s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) { .blink { animation: none; } }
+@keyframes spideyBannerSlide {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes spideySlideInLeft {
+  0% { opacity: 0; transform: translate(-30px, -50%) scale(0.88); }
+  75% { opacity: 1; transform: translate(4px, -50%) scale(1.02); }
+  100% { opacity: 1; transform: translate(0, -50%) scale(1); }
+}
+@keyframes spideyPopCenter {
+  0% { opacity: 0; transform: translate(-50%, -35%) scale(0.8); }
+  75% { opacity: 1; transform: translate(-50%, -52%) scale(1.03); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes spideySlideInRight {
+  0% { opacity: 0; transform: translate(30px, -50%) scale(0.88); }
+  75% { opacity: 1; transform: translate(-4px, -50%) scale(1.02); }
+  100% { opacity: 1; transform: translate(0, -50%) scale(1); }
+}

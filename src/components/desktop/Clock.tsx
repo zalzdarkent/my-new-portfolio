@@ -12,7 +12,7 @@ export default function Clock() {
   const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <div className="ub-clock">
+    <div className="font-semibold tracking-[0.3px] tabular-nums">
       {dateStr} {timeStr}
     </div>
   )

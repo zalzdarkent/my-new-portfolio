@@ -421,7 +421,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       )}
       {createPortal(<PhoneExperience page={phonePage} onPageChange={setPhonePage} />, phoneScreenEl)}
       {createPortal(<PhoneExperience page={phonePage} onPageChange={setPhonePage} />, phoneOverlayEl)}
-      <p className={`begin${started && mode === 'overview' ? '' : ' off'}`}>
+      <p className={`fixed bottom-16 left-1/2 z-5 -translate-x-1/2 whitespace-nowrap bg-white px-4 py-1 leading-[19px] text-black pointer-events-none transition-[opacity,transform] duration-500 max-md:bottom-8 ${started && mode === 'overview' ? 'animate-[beginPulse_2.4s_ease-in-out_infinite]' : 'translate-y-3 opacity-0'}`}>
         {typedBegin}
         <span className="blink">_</span>
       </p>

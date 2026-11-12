@@ -26,6 +26,7 @@ const HEROES = [
     bgGradient: 'linear-gradient(135deg, rgba(8, 22, 38, 0.92) 0%, rgba(12, 14, 28, 0.96) 100%)',
     order: 1,
     delay: '0.1s',
+    pos: 'left-[max(16px,calc(50%_-_560px))] top-[68%] -translate-y-1/2 animate-[spideySlideInLeft_0.65s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]',
   },
   {
     key: 'tom',
@@ -40,6 +41,7 @@ const HEROES = [
     bgGradient: 'linear-gradient(135deg, rgba(38, 12, 16, 0.92) 0%, rgba(20, 10, 18, 0.96) 100%)',
     order: 2,
     delay: '0.25s',
+    pos: 'left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 animate-[spideyPopCenter_0.65s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]',
   },
   {
     key: 'tobey',
@@ -54,6 +56,7 @@ const HEROES = [
     bgGradient: 'linear-gradient(135deg, rgba(28, 14, 20, 0.92) 0%, rgba(14, 14, 20, 0.96) 100%)',
     order: 3,
     delay: '0.4s',
+    pos: 'right-[max(16px,calc(50%_-_560px))] top-[68%] -translate-y-1/2 animate-[spideySlideInRight_0.65s_cubic-bezier(0.175,0.885,0.32,1.275)_forwards]',
   },
 ] as const
 
@@ -73,7 +76,7 @@ export default function SpidermanOverlay({ active, coords, onClose }: SpidermanO
   if (!active && !visible) return null
 
   return (
-    <div className={`spidey-overlay-root ${visible ? 'active' : ''}`}>
+    <div className={`fixed inset-0 pointer-events-none z-[100] transition-opacity duration-[400ms] ease-[ease] overflow-hidden ${visible ? 'opacity-100' : 'opacity-0'}`}>
       {/* Top Multiverse Header Banner */}
       {/* <div className="spidey-top-banner">
         <div className="spidey-banner-pill">
@@ -91,7 +94,7 @@ export default function SpidermanOverlay({ active, coords, onClose }: SpidermanO
       </div> */}
 
       {/* 3 Spider-Man Information Cards */}
-      <div className="spidey-cards-container">
+      <div className="absolute inset-0 pointer-events-none max-[900px]:inset-[auto_0_54px_0] max-[900px]:flex max-[900px]:flex-row max-[900px]:overflow-x-auto max-[900px]:gap-3 max-[900px]:px-4 max-[900px]:py-2.5 max-[900px]:justify-start max-[900px]:pointer-events-auto">
         {HEROES.map((hero) => {
           const heroCoords = coords ? coords[hero.key] : null
           const cardStyle: React.CSSProperties = {
@@ -110,37 +113,37 @@ export default function SpidermanOverlay({ active, coords, onClose }: SpidermanO
           return (
             <div
               key={hero.key}
-              className={`spidey-card spidey-card-${hero.key}`}
+              className={`absolute w-[245px] rounded-[10px] border-[1.5px] border-solid px-3.5 py-3 pointer-events-auto opacity-0 backdrop-blur-[14px] [clip-path:polygon(12px_0,100%_0,100%_calc(100%_-_12px),calc(100%_-_12px)_100%,0_100%,0_12px)] box-border ${hero.pos} max-[900px]:relative! max-[900px]:left-auto! max-[900px]:right-auto! max-[900px]:top-auto! max-[900px]:transform-none! max-[900px]:translate-x-0! max-[900px]:translate-y-0! max-[900px]:basis-[240px] max-[900px]:grow-0 max-[900px]:shrink-0 max-[900px]:animate-none! max-[900px]:opacity-100`}
               style={cardStyle}
             >
               {/* Card Corner Web Accent */}
-              <div className="spidey-card-corner" style={{ color: hero.accentColor }}>
+              <div className="absolute top-2 right-2.5 text-sm opacity-80 [filter:drop-shadow(0_0_6px_currentColor)]" style={{ color: hero.accentColor }}>
                 🕷
               </div>
 
               {/* Variant Tag */}
-              <div className="spidey-variant-badge" style={{ color: hero.accentColor, borderColor: hero.accentColor }}>
+              <div className="inline-block text-[9.5px] font-extrabold tracking-[1px] px-1.5 py-px rounded border border-solid bg-black/45 mb-1 uppercase" style={{ color: hero.accentColor, borderColor: hero.accentColor }}>
                 {hero.variant}
               </div>
 
               {/* Character Name */}
-              <h2 className="spidey-character-name">
+              <h2 className="m-0 mb-1 text-[17px] font-black tracking-[0.8px] text-white uppercase [text-shadow:0_2px_10px_rgba(0,0,0,0.8)]">
                 {hero.character}
               </h2>
 
               {/* Real Actor Name */}
-              <div className="spidey-actor-row">
-                <span className="spidey-actor-label">Pemeran:</span>
-                <span className="spidey-actor-name" style={{ color: hero.accentColor }}>
+              <div className="flex items-center gap-1.5 mb-2 pb-1.5 border-b border-solid border-white/12">
+                <span className="text-[10.5px] text-[#a0a5b5] font-semibold uppercase tracking-[0.5px]">Pemeran:</span>
+                <span className="text-[13.5px] font-extrabold tracking-[0.5px] [text-shadow:0_0_8px_currentColor]" style={{ color: hero.accentColor }}>
                   {hero.actor}
                 </span>
               </div>
 
               {/* Universe & Suit Info */}
-              <div className="spidey-meta-box">
-                <div className="spidey-meta-item">
-                  <span className="spidey-meta-label">Universe:</span>
-                  <span className="spidey-meta-val">{hero.universe}</span>
+              <div className="flex flex-col gap-1 mb-2 bg-black/35 rounded-md px-2 py-1.5 border border-solid border-white/6">
+                <div className="flex flex-col gap-px">
+                  <span className="text-[9px] font-bold text-[#8a90a0] uppercase tracking-[0.5px]">Universe:</span>
+                  <span className="text-[10.5px] text-[#e0e4f0] font-medium leading-[1.25]">{hero.universe}</span>
                 </div>
                 <div className="spidey-meta-item">
                   <span className="spidey-meta-label">Suit Specs:</span>
@@ -149,7 +152,7 @@ export default function SpidermanOverlay({ active, coords, onClose }: SpidermanO
               </div>
 
               {/* Iconic Quote */}
-              <div className="spidey-quote">
+              <div className="text-[10.5px] italic text-[#cbd5e1] leading-[1.35] opacity-90">
                 {hero.quote}
               </div>
             </div>
@@ -158,9 +161,9 @@ export default function SpidermanOverlay({ active, coords, onClose }: SpidermanO
       </div>
 
       {/* Bottom Hint Banner */}
-      <div className="spidey-bottom-hint">
-        <button className="spidey-back-btn" onClick={onClose}>
-          <span className="spidey-key-badge">ESC</span>
+      <div className="absolute bottom-4 inset-x-0 flex justify-center pointer-events-none animate-[spideyBannerSlide_0.6s_cubic-bezier(0.16,1,0.3,1)_0.3s_both]">
+        <button className="flex items-center gap-2 bg-[rgba(10,12,20,0.9)] border border-solid border-white/20 text-[#e2e8f0] px-3.5 py-1.5 rounded-full text-[11px] font-semibold cursor-pointer pointer-events-auto shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-[transform,background,border-color] duration-200 hover:[transform:translateY(-2px)] hover:bg-[rgba(20,24,38,0.95)] hover:border-[#ff3344] hover:text-white" onClick={onClose}>
+          <span className="bg-white/15 border border-solid border-white/30 rounded px-1.5 py-px text-[10px] font-extrabold tracking-[0.5px]">ESC</span>
           <span>Klik di mana saja atau tekan ESC untuk kembali ke meja</span>
         </button>
       </div>

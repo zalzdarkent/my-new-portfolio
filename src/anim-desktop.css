@@ -1,0 +1,4 @@
+/* Keyframes for the desktop shell (window/launcher pop-in). Used via animate-[win-pop_...]. */
+@keyframes win-pop {
+  from { opacity: 0; transform: scale(0.92); }
+}

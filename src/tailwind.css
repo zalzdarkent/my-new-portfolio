@@ -1,0 +1,75 @@
+/* Tailwind v4 entry. Preflight is intentionally omitted during the staged migration:
+   styles.css already resets the box model, and Preflight would alter unmigrated components.
+   Add `@import "tailwindcss/preflight.css" layer(base);` once desktop.css is gone. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import './anim-loader.css';
+@import './anim-desktop.css';
+@import './anim-showcase.css';
+
+@layer base {
+  *, ::before, ::after { box-sizing: border-box; margin: 0; padding: 0; }
+}
+
+/* Button reset for the desktop subtree (was `.os button` in desktop.css). Layered so utilities win;
+   unlayered legacy rules (Showcase/Contact) still override it exactly as before. */
+@layer base {
+  .os button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+}
+
+@theme {
+  --color-ub-purple: #77216f;
+  --color-ub-aubergine: #2c001e;
+  --color-ub-orange: #e95420;
+  --color-ub-panel: rgb(18 18 18 / 0.96);
+  --color-ub-window: #2d2d2d;
+  --color-ub-header: #242424;
+  --color-text-dim: #c9c3cc;
+  --color-slate-deep: #1d2e2f;
+  --font-ubuntu: 'Ubuntu', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-term: 'Courier New', Courier, monospace;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --spacing-frame: 7px;
+}
+
+/* ===== Previous enhance.css (unlayered: wins over legacy CSS until each component migrates) ===== */
+/* Enhancement layer: colorize, typeset, layout, animate, delight.
+   Additive and loaded last; the existing Ubuntu-desktop-in-a-room identity is preserved. */
+
+/* ---------- Colorize: one accent, used for meaning ---------- */
+.os {
+  --accent: var(--ub-orange);
+  --accent-soft: rgba(233, 84, 32, 0.18);
+  --accent-ring: rgba(233, 84, 32, 0.75);
+  --text-dim: #c9c3cc; /* tinted from the aubergine wallpaper, not neutral gray */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  accent-color: var(--accent);
+  caret-color: var(--accent);
+}
+.os ::selection { background: var(--accent); color: #fff; }
+.loader ::selection, .loader::selection { background: #ffb300; color: #000; }
+
+/* ---------- Typeset ---------- */
+.os { font-feature-settings: 'kern', 'liga'; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+.popup-main-title { text-wrap: balance; }
+.os a { text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+.os code, .os kbd, .os pre { font-family: 'Ubuntu Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace; }
+
+/* ---------- Layout: rhythm and breathing room ---------- */
+
+/* ---------- Focus: visible and themed ---------- */
+.os button:focus-visible, .os a:focus-visible, .os input:focus-visible,
+.os textarea:focus-visible, .os select:focus-visible, .os [tabindex]:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.hacker-start:focus-visible { outline: 2px solid #ffb300; outline-offset: 2px; }
+
+/* ---------- Animate: one authored entrance, quick feedback ---------- */
+.os button:active:not(:disabled) { transform: scale(0.97); }
+
+/* ---------- Delight: the room reacts, restrained ---------- */
+.hacker-start { transition: background-color 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s var(--ease-out); }
+@keyframes beginPulse { 50% { opacity: 0.72; } }
