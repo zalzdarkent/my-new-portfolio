@@ -1,0 +1,230 @@
+{
+  ".impeccable/hook.cache.json": {
+    "mtime": 1793779859.3147311,
+    "seen": 1794544626.1727138,
+    "ast_hash": "fc090eab93fe1c14d95197819bde2f12",
+    "semantic_hash": "fc090eab93fe1c14d95197819bde2f12"
+  },
+  "package.json": {
+    "mtime": 1794388652.67146,
+    "seen": 1794544626.1727178,
+    "ast_hash": "f131983431b6fcf0b9f41b4c29a53d36",
+    "semantic_hash": "f131983431b6fcf0b9f41b4c29a53d36"
+  },
+  "src/App.tsx": {
+    "mtime": 1793861839.7016554,
+    "seen": 1794544626.1727197,
+    "ast_hash": "49d663139dd9b0a7187bef79c5748444",
+    "semantic_hash": "49d663139dd9b0a7187bef79c5748444"
+  },
+  "src/Desktop.tsx": {
+    "mtime": 1794445219.35193,
+    "seen": 1794544626.1727204,
+    "ast_hash": "2b3a9c946da5972d6b3290090bf540ce",
+    "semantic_hash": "2b3a9c946da5972d6b3290090bf540ce"
+  },
+  "src/Hud.tsx": {
+    "mtime": 1794389197.6893656,
+    "seen": 1794544626.1727214,
+    "ast_hash": "5ed1401dd059292d19a524f74eeba4dd",
+    "semantic_hash": "5ed1401dd059292d19a524f74eeba4dd"
+  },
+  "src/Loader.tsx": {
+    "mtime": 1794445180.4386253,
+    "seen": 1794544626.172722,
+    "ast_hash": "7c1d78b4e16cf919073d8b76db0cc796",
+    "semantic_hash": "7c1d78b4e16cf919073d8b76db0cc796"
+  },
+  "src/Scene.tsx": {
+    "mtime": 1794542749.7282987,
+    "seen": 1794544626.172723,
+    "ast_hash": "7613368e401c416841a2d8624bc4a74f",
+    "semantic_hash": "7613368e401c416841a2d8624bc4a74f"
+  },
+  "src/components/desktop/Clock.tsx": {
+    "mtime": 1794445243.901886,
+    "seen": 1794544626.1727235,
+    "ast_hash": "c563989da08d0efd8122bf7948ecb9b9",
+    "semantic_hash": "c563989da08d0efd8122bf7948ecb9b9"
+  },
+  "src/components/desktop/ContactForm.tsx": {
+    "mtime": 1794445342.9432662,
+    "seen": 1794544626.1727242,
+    "ast_hash": "5989ff384517e7d58adde0bc71de8ffe",
+    "semantic_hash": "5989ff384517e7d58adde0bc71de8ffe"
+  },
+  "src/components/desktop/Icon.tsx": {
+    "mtime": 1793864908.6888006,
+    "seen": 1794544626.172725,
+    "ast_hash": "56a7685504cc1942c15bdcc61ddd7f27",
+    "semantic_hash": "56a7685504cc1942c15bdcc61ddd7f27"
+  },
+  "src/components/desktop/PhoneExperience.tsx": {
+    "mtime": 1794446201.034519,
+    "seen": 1794544626.1727254,
+    "ast_hash": "45506214a40b1569897429d2b2ccea2b",
+    "semantic_hash": "45506214a40b1569897429d2b2ccea2b"
+  },
+  "src/components/desktop/Showcase.tsx": {
+    "mtime": 1794445330.9840472,
+    "seen": 1794544626.1727262,
+    "ast_hash": "c010bc697eb2af6757c741bfeb634e07",
+    "semantic_hash": "c010bc697eb2af6757c741bfeb634e07"
+  },
+  "src/components/scene/DeskSetup.ts": {
+    "mtime": 1794543154.8933172,
+    "seen": 1794544626.172727,
+    "ast_hash": "503de623b5fcb8b899527a3d9da272e9",
+    "semantic_hash": "503de623b5fcb8b899527a3d9da272e9"
+  },
+  "src/components/scene/SpidermanOverlay.tsx": {
+    "mtime": 1794446485.8034892,
+    "seen": 1794544626.1727276,
+    "ast_hash": "e8a01547a833709d41fe6f366612ffee",
+    "semantic_hash": "e8a01547a833709d41fe6f366612ffee"
+  },
+  "src/constants/sceneConstants.ts": {
+    "mtime": 1793926738.3133287,
+    "seen": 1794544626.172728,
+    "ast_hash": "c1dfa172f6b2a6f021a53a93a7ecd31c",
+    "semantic_hash": "c1dfa172f6b2a6f021a53a93a7ecd31c"
+  },
+  "src/data/portfolioData.ts": {
+    "mtime": 1793930619.8545125,
+    "seen": 1794544626.1727285,
+    "ast_hash": "d9038de46e0b45edf4f2f309e22dc555",
+    "semantic_hash": "d9038de46e0b45edf4f2f309e22dc555"
+  },
+  "src/main.tsx": {
+    "mtime": 1794388666.9834585,
+    "seen": 1794544626.172729,
+    "ast_hash": "d28465ff4d1cc92011b58379dcfbe64f",
+    "semantic_hash": "d28465ff4d1cc92011b58379dcfbe64f"
+  },
+  "src/motion.tsx": {
+    "mtime": 1793863052.8687127,
+    "seen": 1794544626.17273,
+    "ast_hash": "cde20c718d38f1faa9cc945aad6e4179",
+    "semantic_hash": "cde20c718d38f1faa9cc945aad6e4179"
+  },
+  "src/sound.ts": {
+    "mtime": 1794213108.8292596,
+    "seen": 1794544626.1727304,
+    "ast_hash": "a54b41c03d0f030b3e9cf2c4a7458441",
+    "semantic_hash": "a54b41c03d0f030b3e9cf2c4a7458441"
+  },
+  "src/types/portfolio.ts": {
+    "mtime": 1793864908.8219469,
+    "seen": 1794544626.172731,
+    "ast_hash": "4afe3b91e3c380d33c6f67fc9d2d78e1",
+    "semantic_hash": "4afe3b91e3c380d33c6f67fc9d2d78e1"
+  },
+  "tsconfig.json": {
+    "mtime": 1793759981.9440074,
+    "seen": 1794544626.1727316,
+    "ast_hash": "4599c9a8b6adf7a2e09fc8faf10d8bb6",
+    "semantic_hash": "4599c9a8b6adf7a2e09fc8faf10d8bb6"
+  },
+  "vite.config.ts": {
+    "mtime": 1794388666.9846003,
+    "seen": 1794544626.172732,
+    "ast_hash": "f91633a5fd76a1f6269a260d976703f2",
+    "semantic_hash": "f91633a5fd76a1f6269a260d976703f2"
+  },
+  "index.html": {
+    "mtime": 1793858978.374193,
+    "seen": 1794544626.172733,
+    "ast_hash": "589e729f656ddbe0db10c65325754980",
+    "semantic_hash": "589e729f656ddbe0db10c65325754980"
+  },
+  "pnpm-workspace.yaml": {
+    "mtime": 1794213108.8282597,
+    "seen": 1794544626.1727338,
+    "ast_hash": "71d750bf975fc42585a2a41196fb788e",
+    "semantic_hash": "71d750bf975fc42585a2a41196fb788e"
+  },
+  "public/faber_castell_ballpoint_pen/license.txt": {
+    "mtime": 1793930250.5286224,
+    "seen": 1794544626.1727343,
+    "ast_hash": "7eda35353f61b4640052f3a798362e7c",
+    "semantic_hash": "7eda35353f61b4640052f3a798362e7c"
+  },
+  "public/gaming-pc/license.txt": {
+    "mtime": 1793854685.70334,
+    "seen": 1794544626.1727347,
+    "ast_hash": "128eea9255ad47b1b48beaf81b4f9604",
+    "semantic_hash": "128eea9255ad47b1b48beaf81b4f9604"
+  },
+  "public/iphone_16/license.txt": {
+    "mtime": 1793926937.4832213,
+    "seen": 1794544626.1727352,
+    "ast_hash": "94a4782e5bf30c20714ea9ad695b7750",
+    "semantic_hash": "94a4782e5bf30c20714ea9ad695b7750"
+  },
+  "public/notebook_blackwhite/license.txt": {
+    "mtime": 1793929027.8616395,
+    "seen": 1794544626.1727357,
+    "ast_hash": "d1bb8e1c7cdf1c87a0274f15502efbd1",
+    "semantic_hash": "d1bb8e1c7cdf1c87a0274f15502efbd1"
+  },
+  "public/phone_holder/license.txt": {
+    "mtime": 1793926960.2395523,
+    "seen": 1794544626.1727364,
+    "ast_hash": "7d81ef3423acefd1a54a72c131965c23",
+    "semantic_hash": "7d81ef3423acefd1a54a72c131965c23"
+  },
+  "public/rhyzome_plant/license.txt": {
+    "mtime": 1793866841.6639338,
+    "seen": 1794544626.1727371,
+    "ast_hash": "075bd6bb95d2df0dc946971e44464f9e",
+    "semantic_hash": "075bd6bb95d2df0dc946971e44464f9e"
+  },
+  "public/rog/license.txt": {
+    "mtime": 1793947961.727434,
+    "seen": 1794544626.1727376,
+    "ast_hash": "d4a5c36264c120ffea067e2817349623",
+    "semantic_hash": "d4a5c36264c120ffea067e2817349623"
+  },
+  "public/simple_retro_desk_lamp/license.txt": {
+    "mtime": 1793925367.3783505,
+    "seen": 1794544626.172738,
+    "ast_hash": "b0dd942397d3ddbbdb5a3e45d197b9e5",
+    "semantic_hash": "b0dd942397d3ddbbdb5a3e45d197b9e5"
+  },
+  "public/spiderman_no_way_home/license.txt": {
+    "mtime": 1793931521.2653224,
+    "seen": 1794544626.1727388,
+    "ast_hash": "c4dc8bf831c754aecf1908a74863ba3f",
+    "semantic_hash": "c4dc8bf831c754aecf1908a74863ba3f"
+  },
+  "public/white_gaming_chair/license.txt": {
+    "mtime": 1793925966.0947766,
+    "seen": 1794544626.1727393,
+    "ast_hash": "5c7c5ec8dbef34dfc83c04ba55c732e8",
+    "semantic_hash": "5c7c5ec8dbef34dfc83c04ba55c732e8"
+  },
+  "tasks/plan.md": {
+    "mtime": 1794542766.9892995,
+    "seen": 1794544626.1727397,
+    "ast_hash": "10a1496d6354390f6f60512d6904739b",
+    "semantic_hash": "10a1496d6354390f6f60512d6904739b"
+  },
+  "tasks/todo.md": {
+    "mtime": 1794542770.5862997,
+    "seen": 1794544626.1727405,
+    "ast_hash": "4dcc8084df9124730c86c821a14eb8f4",
+    "semantic_hash": "4dcc8084df9124730c86c821a14eb8f4"
+  },
+  "public/hidup-jokowi.mp3": {
+    "mtime": 1793939016.3370395,
+    "seen": 1794544626.172741,
+    "ast_hash": "a843eeffd650ee34197994392459f50c",
+    "semantic_hash": "a843eeffd650ee34197994392459f50c"
+  },
+  "public/spiderman-meme-song.mp3": {
+    "mtime": 1793957180.730769,
+    "seen": 1794544626.1727414,
+    "ast_hash": "66f73bb5666d486b07ff81e3d800e2e6",
+    "semantic_hash": "66f73bb5666d486b07ff81e3d800e2e6"
+  }
+}

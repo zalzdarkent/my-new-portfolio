@@ -1,7 +1,7 @@
 import type { ThumbKind } from '../motion'
 
-export type AppId = 'showcase' | 'notes' | 'credits'
-export type IconKind = 'terminal' | 'note' | 'folder' | 'browser'
+export type AppId = 'showcase' | 'terminal' | 'browser' | 'notes' | 'calculator' | 'settings' | 'credits'
+export type IconKind = 'terminal' | 'bash' | 'note' | 'folder' | 'browser' | 'calculator' | 'settings'
 export type Lang = 'id' | 'en'
 
 export const NAV_KEYS = ['Home', 'About', 'Skills', 'Experience', 'Education', 'Projects', 'Contact'] as const

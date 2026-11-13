@@ -54,11 +54,14 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     return el
   }, [])
   const [mode, setMode] = useState<Mode>('overview')
+  const [darkMode, setDarkMode] = useState(true)
   const [spidermanOverlayActive, setSpidermanOverlayActive] = useState(false)
   const [phonePage, setPhonePage] = useState<PhonePage>('lock')
   const [typedBegin, setTypedBegin] = useState('')
   const modeRef = useRef<Mode>('overview')
   modeRef.current = mode
+  const setDarkModeRef = useRef<((dark: boolean) => void) | null>(null)
+  const glRef = useRef<THREE.WebGLRenderer | null>(null)
 
   const startedRef = useRef(started)
   startedRef.current = started
@@ -116,6 +119,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     cssScene.add(phoneScreenObj)
 
     const gl = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' })
+    glRef.current = gl
     gl.setClearColor(0x070709, 1)
     gl.setPixelRatio(Math.min(devicePixelRatio, 1.25))
     gl.shadowMap.enabled = true
@@ -145,7 +149,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     const spiderManCenter = new THREE.Vector3()
     const spiderManNormal = new THREE.Vector3(0, 0, 1)
     const spiderManSize = new THREE.Vector2()
-    const { monitor, life } = buildDesk(scene, () => {
+    const { monitor, life, setDarkMode: applyDeskDarkMode } = buildDesk(scene, () => {
       // Pre-compile shaders, render static shadow map once, and warm up GPU before user clicks START
       gl.shadowMap.needsUpdate = true
       gl.compile(scene, camera)
@@ -180,6 +184,7 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
     }, (speakers) => {
       speakersRef.current = speakers
     })
+    setDarkModeRef.current = applyDeskDarkMode
 
     // Drag to turn around the desk in the overview (360 degrees full rotation)
     const controls = new OrbitControls(camera, gl.domElement)
@@ -407,11 +412,21 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
       spiderManRef.current = null
       speakersRef.current = null
       phoneOverlayEl.remove()
+      setDarkModeRef.current = null
+      glRef.current = null
       gl.dispose()
       gl.domElement.remove()
       css.domElement.remove()
     }
   }, [screenEl, phoneScreenEl, phoneOverlayEl])
+
+  useEffect(() => {
+    setDarkModeRef.current?.(darkMode)
+    if (glRef.current) {
+      glRef.current.setClearColor(darkMode ? 0x070709 : 0x000000, darkMode ? 1 : 0)
+      glRef.current.shadowMap.needsUpdate = true
+    }
+  }, [darkMode])
 
   return (
     <div className="scene" ref={host}>
@@ -426,6 +441,31 @@ export default function Scene({ started = true, onLoaded }: { started?: boolean;
         <span className="blink">_</span>
       </p>
       <Hud show={mode === 'desk'} onOverview={() => setMode('overview')} />
+      <div
+        className={`hud fixed right-16 top-16 z-5 max-md:right-4 max-md:top-4 transition-[opacity,transform] duration-[600ms] ${started && (mode === 'overview' || mode === 'desk') ? 'delay-[400ms]' : 'pointer-events-none -translate-y-2 opacity-0 delay-0'}`}
+      >
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 bg-white text-black px-3 py-1 h-[27px] leading-[19px] border-0 font-[inherit] cursor-pointer hover:bg-[#ddd] active:scale-95 transition-[background-color,transform] duration-150 ease-out-expo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffb300]"
+          onPointerDown={() => playMouseDown()}
+          onPointerUp={() => playMouseUp()}
+          onClick={() => setDarkMode((prev) => !prev)}
+          aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-pressed={!darkMode}
+        >
+          {darkMode ? (
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden>
+              <path d="M6.5 1.5a6.5 6.5 0 1 0 8 8 5.5 5.5 0 0 1-8-8Z" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden>
+              <circle cx="8" cy="8" r="3.2" />
+              <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M12.95 3.05l-1.41 1.41M4.46 11.54l-1.41 1.41" stroke="currentColor" strokeWidth="1.4" />
+            </svg>
+          )}
+          <span>{darkMode ? 'Dark' : 'Light'}</span>
+        </button>
+      </div>
       <SpidermanOverlay
         active={spidermanOverlayActive}
         onClose={() => {

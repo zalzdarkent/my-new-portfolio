@@ -21,6 +21,7 @@ const box = (w: number, h: number, d: number, color: number, r = 0) =>
 export interface DeskSetup {
   monitor: THREE.Group
   life: (t: number) => void
+  setDarkMode: (dark: boolean) => void
 }
 
 export function buildDesk(
@@ -70,6 +71,9 @@ export function buildDesk(
 
   // Load desk assets in parallel before start screen finishes
   const gltfLoader = new GLTFLoader()
+  let isDark = true
+  const lampObjects: THREE.Object3D[] = []
+  const lampLights: THREE.PointLight[] = []
 
   Promise.all([
     gltfLoader.loadAsync('./gaming-pc/scene.gltf'),
@@ -306,6 +310,9 @@ export function buildDesk(
       frontLampLight.castShadow = false
       scene.add(frontLampLight)
 
+      lampObjects.push(lampModel, frontDeskLamp)
+      lampLights.push(lampLight, frontLampLight)
+
       const phoneHolder = phoneHolderGltf.scene
       phoneHolder.scale.setScalar(0.1)
       phoneHolder.updateMatrixWorld(true)
@@ -471,8 +478,11 @@ export function buildDesk(
       spideyRimLight.castShadow = false
       scene.add(spideyRimLight)
 
+      lampLights.push(spideyKeyLight, spideyFillLeft, spideyFillRight, spideyRimLight)
+
       onSpiderManReady(spiderMan)
 
+      applyDarkMode(isDark)
       onModelsReady()
     })
     .catch((err) => {
@@ -490,7 +500,8 @@ export function buildDesk(
   add(scene, mug, -0.54, 0.76, 0.22 - DESK_BACK_OFFSET).rotation.y = 2.4
 
   // Soft low-key lighting
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x111114, 0.42))
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x111114, 0.42)
+  scene.add(hemi)
   const key = new THREE.DirectionalLight(0xffffff, 0.8)
   key.position.set(0.6, 5, 2.0)
   key.castShadow = true
@@ -503,7 +514,21 @@ export function buildDesk(
   const fill = new THREE.DirectionalLight(0xffffff, 0.12)
   fill.position.set(-3, 2, 2)
   scene.add(fill)
+  const frontStudioFill = new THREE.DirectionalLight(0xffffff, 0)
+  frontStudioFill.position.set(2.5, 1.8, 3.0)
+  scene.add(frontStudioFill)
+
+  const applyDarkMode = (dark: boolean) => {
+    isDark = dark
+    for (const obj of lampObjects) obj.visible = dark
+    for (const light of lampLights) light.visible = dark
+    hemi.groundColor.setHex(dark ? 0x111114 : 0x909098)
+    hemi.intensity = dark ? 0.42 : 1.25
+    key.intensity = dark ? 0.8 : 1.5
+    fill.intensity = dark ? 0.12 : 0.55
+    frontStudioFill.intensity = dark ? 0 : 0.75
+  }
 
   const life = (_t: number) => { }
-  return { monitor: monitorHitbox, life }
+  return { monitor: monitorHitbox, life, setDarkMode: applyDarkMode }
 }

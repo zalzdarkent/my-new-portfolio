@@ -1,7 +1,11 @@
 import { useRef, useState, type PointerEvent as RPE, type ReactNode } from 'react'
+import BrowserApp from './components/desktop/BrowserApp'
+import CalculatorApp from './components/desktop/CalculatorApp'
 import Clock from './components/desktop/Clock'
 import Icon from './components/desktop/Icon'
+import SettingsApp, { WALLPAPERS } from './components/desktop/SettingsApp'
 import Showcase from './components/desktop/Showcase'
+import TerminalApp from './components/desktop/TerminalApp'
 import { playKeyClick, playMouseDown, playMouseUp } from './sound'
 import type { AppId, IconKind, Win } from './types/portfolio'
 import './desktop.css'
@@ -11,7 +15,11 @@ export const SCREEN_H = 720
 
 const APPS: Record<AppId, { title: string; icon: IconKind; w: number; h: number }> = {
   showcase: { title: 'Showcase - Alif Fadillah Ummar', icon: 'terminal', w: 960, h: 600 },
+  terminal: { title: 'Terminal - bash', icon: 'bash', w: 680, h: 430 },
+  browser: { title: 'Firefox - Portfolio Web', icon: 'browser', w: 780, h: 520 },
   notes: { title: 'Text Editor - readme.txt', icon: 'note', w: 520, h: 400 },
+  calculator: { title: 'Calculator', icon: 'calculator', w: 320, h: 430 },
+  settings: { title: 'Settings - Ubuntu 24.04', icon: 'settings', w: 660, h: 440 },
   credits: { title: 'Credits', icon: 'folder', w: 640, h: 610 },
 }
 
@@ -90,8 +98,10 @@ const WIN = 'animate-[win-pop_0.25s_cubic-bezier(0.16,1,0.3,1)_backwards] motion
 const WBTN =
   'w-5 h-5 rounded-full border-0 flex items-center justify-center text-[11px] text-white/80 bg-white/14 transition-all duration-150 hover:text-white'
 
-const CONTENT: Record<AppId, ReactNode> = {
+const STATIC_CONTENT: Partial<Record<AppId, ReactNode>> = {
   showcase: <Showcase />,
+  browser: <BrowserApp />,
+  calculator: <CalculatorApp />,
   notes: (
     <textarea
       className="w-full h-full p-4! bg-[#1e1e1e] text-[#e0e0e0] font-[monospace] text-[13px] leading-[1.5] border-0 outline-none resize-none"
@@ -167,8 +177,11 @@ Tips Navigasi:
 export default function Desktop({ zoomed, onEnter }: { zoomed: boolean; onEnter: () => void }) {
   const [wins, setWins] = useState<Win[]>([{ id: 'showcase', x: 175, y: 55, z: 1, min: false }])
   const [launcher, setLauncher] = useState(false)
+  const [wallpaperId, setWallpaperId] = useState('noble')
   const top = useRef(1)
   const root = useRef<HTMLDivElement>(null)
+
+  const wallpaper = WALLPAPERS.find((w) => w.id === wallpaperId)?.gradient ?? WALLPAPERS[0].gradient
 
   const focus = (id: AppId) => setWins((ws) => ws.map((w) => (w.id === id ? { ...w, z: ++top.current, min: false } : w)))
   const open = (id: AppId) => {
@@ -221,9 +234,16 @@ export default function Desktop({ zoomed, onEnter }: { zoomed: boolean; onEnter:
   const live = wins.filter((w) => !w.min && !w.closing)
   const front = Math.max(0, ...live.map((w) => w.z))
 
+  const renderContent = (id: AppId): ReactNode => {
+    if (id === 'terminal') return <TerminalApp onOpenApp={open} />
+    if (id === 'settings') return <SettingsApp wallpaperId={wallpaperId} onSelectWallpaper={setWallpaperId} />
+    return STATIC_CONTENT[id]
+  }
+
   return (
     <div
-      className="os relative w-[1280px] h-[720px] overflow-hidden bg-[radial-gradient(circle_at_80%_20%,#77216F_0%,#3e1239_45%,#1d0718_100%)] text-[#f6f6f6] font-ubuntu text-[14px] tracking-[0.2px] select-none after:content-[''] after:absolute after:inset-0 after:pointer-events-none after:z-[10001] after:bg-[radial-gradient(ellipse_90%_80%_at_50%_40%,transparent_55%,rgba(0,0,0,0.28)_100%)]"
+      className="os relative w-[1280px] h-[720px] overflow-hidden text-[#f6f6f6] font-ubuntu text-[14px] tracking-[0.2px] select-none after:content-[''] after:absolute after:inset-0 after:pointer-events-none after:z-[10001] after:bg-[radial-gradient(ellipse_90%_80%_at_50%_40%,transparent_55%,rgba(0,0,0,0.28)_100%)]"
+      style={{ background: wallpaper }}
       ref={root}
       onPointerDownCapture={() => playMouseDown()}
       onPointerUpCapture={() => playMouseUp()}
@@ -274,7 +294,7 @@ export default function Desktop({ zoomed, onEnter }: { zoomed: boolean; onEnter:
       </div>
 
       {/* Desktop App Icons */}
-      <div className="absolute left-20 top-12 grid gap-6">
+      <div className="absolute left-20 top-12 grid grid-flow-col grid-rows-4 gap-5">
         {(Object.keys(APPS) as AppId[]).map((id, i) => (
           <button
             key={id}
@@ -334,7 +354,7 @@ export default function Desktop({ zoomed, onEnter }: { zoomed: boolean; onEnter:
               </button>
             </div>
           </div>
-          <div className="flex-1 overflow-auto bg-ub-header">{CONTENT[w.id]}</div>
+          <div className="flex-1 overflow-auto bg-ub-header">{renderContent(w.id)}</div>
         </div>
       ))}
 
@@ -343,7 +363,7 @@ export default function Desktop({ zoomed, onEnter }: { zoomed: boolean; onEnter:
         <div className="absolute inset-[32px_0_0_60px] bg-[rgba(15,5,14,0.85)] z-[15000] flex items-center justify-center animate-[win-pop_0.2s_cubic-bezier(0.16,1,0.3,1)] motion-reduce:animate-none" onClick={() => setLauncher(false)}>
           <div className="text-center" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-[20px] mb-6! text-white">Applications</h3>
-            <div className="flex gap-8">
+            <div className="flex flex-wrap justify-center max-w-[720px] gap-6">
               {(Object.keys(APPS) as AppId[]).map((id) => (
                 <button key={id} className="flex flex-col items-center gap-2.5 px-6! py-4! rounded-xl transition-[background-color,translate] duration-150 hover:bg-white/12 hover:-translate-y-[3px] motion-reduce:hover:translate-y-0" onClick={() => open(id)}>
                   <Icon kind={APPS[id].icon} size={48} />
